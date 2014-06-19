@@ -40,7 +40,7 @@ class AlarmThread(threading.Thread):
 
    def snooze(self):
       print "Snoozing alarm for %s minutes" % (self.settings.getInt('snooze_length'))
-      self.stopAlarm()
+      self.silenceAlarm()
 
       alarmTime = datetime.datetime.now()
       alarmTime += datetime.timedelta(minutes=self.settings.getInt('snooze_length'))
@@ -73,18 +73,25 @@ class AlarmThread(threading.Thread):
          self.player.loadfile('/usr/share/scratch/Media/Sounds/Music Loops/GuitarChords2.mp3')
          self.player.loop = 0
 
+   # Only to be called if we're stopping this alarm cycle - see silenceAlarm() for shutting off the player
    def stopAlarm(self):
       print "Stopping alarm"
+      self.silenceAlarm()
+
       self.snoozing = False
       self.nextAlarm = None
       self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
-      if self.player:
-         self.player.quit()
-         self.player=False
-         self.nextAlarm=None
-         print "Player process terminated"
+
       # Automatically set up our next alarm. FIXME: This might choose the same one as we've just cancelled
       self.autoSetAlarm()
+
+   # Stop whatever is playing
+   def silenceAlarm(self):
+      print "Silencing alarm"
+      if self.player:
+         self.player.quit()
+         self.player = False
+         print "Player process terminated"
 
    def autoSetAlarm(self):
       print "Automatically setting next alarm"
