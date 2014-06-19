@@ -4,9 +4,19 @@ import threading
 import time
 import gaugette.rotary_encoder
 import gaugette.switch
+import LedControl
 
 class InputWorker(threading.Thread):
-   def __init__(self, inputReceiver, rotor_a_pin=5, rotor_b_pin=4, select_pin=6, cancel_pin=1):
+   def __init__(
+      self,
+      inputReceiver,
+      rotor_a_pin = 5,
+      rotor_b_pin = 4,
+      select_pin  = 6,
+      cancel_pin  = 1,
+      select_led  = 14, # Note use of BCM numbering rather than WiringPi
+      cancel_led  = 15
+      ):
       threading.Thread.__init__(self)
 
       self.encoder = gaugette.rotary_encoder.RotaryEncoder(rotor_a_pin, rotor_b_pin)
@@ -15,6 +25,12 @@ class InputWorker(threading.Thread):
 
       self.select_state = False
       self.cancel_state = False
+
+      self.select_led = LedControl.LedControl(select_led)
+      self.cancel_led = LedControl.LedControl(cancel_led)
+
+      self.select_led.setValue(100)
+      self.cancel_led.setValue(100)
 
       self.daemon = True
       self.delta = 0
