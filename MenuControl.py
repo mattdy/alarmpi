@@ -111,6 +111,13 @@ class MenuControl(threading.Thread):
 
       return manAlarmTime
 
+   # We need to catch a possible IndexError that crops up in getMessage()
+   def __getStationName(self,index):
+      try:
+         return Settings.STATIONS[self.tmp]['name']
+      except IndexError:
+         return ""
+
    def getMessage(self):
       message = ""
       if self.menuPointer is not None:
@@ -122,7 +129,7 @@ class MenuControl(threading.Thread):
             msg = {
                'Volume': "Volume: %s" % (self.tmp),
                'Manual Alarm': "Alarm at: %s" % (self.__alarmTimeFromInput().strftime("%H:%M")),
-               'Station': "Alarm Station:\n %s" % (Settings.STATIONS[self.tmp]['name'])
+               'Station': "Alarm Station:\n %s" % (self.__getStationName(self.tmp))
             }.get(menuItems[self.menuPointer])
 
             message = "Set %s" % (msg)
