@@ -6,6 +6,7 @@ import threading
 import sys
 import subprocess
 import Settings
+import MediaPlayer
 
 LOOP_TIME=0.1
 
@@ -18,6 +19,7 @@ class MenuControl(threading.Thread):
       self.shutdownCallback = shutdownCallback
       self.alarmThread = alarmThread
       self.settings = Settings.Settings()
+      self.media = MediaPlayer.MediaPlayer()
 
       self.menuPointer = None
       self.menuTimeout = 0
@@ -151,6 +153,7 @@ class MenuControl(threading.Thread):
       while(not self.stopping):
          time.sleep(LOOP_TIME)
          if self.menuTimeout > calcTimeout:
+            self.media.playEffect('are_you_still_there.wav')            
             self.exitMenu()
          elif(self.menuPointer is not None):
             self.menuTimeout+=1
