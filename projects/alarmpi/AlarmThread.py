@@ -14,7 +14,6 @@ class AlarmThread(threading.Thread):
       threading.Thread.__init__(self)
       self.stopping=False
       self.nextAlarm=None
-      self.filenull=open(os.devnull, "w")
       self.snoozing = False
 
       self.settings = Settings.Settings()
