@@ -60,18 +60,20 @@ class LcdThread(threading.Thread):
    def scroll(self,direction):
       self.menu.scroll(direction)
 
+   # Called by InputWorker on press of the select button
    def select(self):
-      if self.alarmThread.isAlarmSounding() or self.alarmThread.isSnoozing():
-         # Stop the alarm!
-         self.alarmThread.stopAlarm()
+      if self.alarmThread.isAlarmSounding():
+         # Lets snooze for a while
+         self.alarmThread.snooze()
          return
 
       self.menu.select()
 
-   # Called by InputWorker on select of the cancel/snooze button
+   # Called by InputWorker on press of the cancel button
    def cancel(self):
-      if self.alarmThread.isAlarmSounding():
-         self.alarmThread.snooze()
+      if self.alarmThread.isAlarmSounding() or self.alarmThread.isSnoozing():
+         # Stop the alarm!
+         self.alarmThread.stopAlarm()
          return
       
       self.menu.cancel()
