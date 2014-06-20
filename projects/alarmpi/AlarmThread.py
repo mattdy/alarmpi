@@ -85,6 +85,7 @@ class AlarmThread(threading.Thread):
       print "Manually setting next alarm to %s" % (alarmTime)
       self.settings.set('manual_alarm',calendar.timegm(alarmTime.utctimetuple()))
       self.setAlarmTime(alarmTime)
+      self.media.playEffect('naptime.wav')
 
    def setAlarmTime(self,alarmTime):
       self.nextAlarm = alarmTime
