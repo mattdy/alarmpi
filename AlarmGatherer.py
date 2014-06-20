@@ -29,7 +29,9 @@ class AlarmGatherer:
       self.storage = Storage('calendar.dat')
       self.credentials = self.storage.get()
       if not self.checkCredentials():
-         raise Exception("GCal credentials have expired")
+         print "Error: GCal credentials have expired."
+         print "Remove calendar.dat and run 'python AlarmGatherer.py' to fix"
+         return
 
       http = httplib2.Http()
       http = self.credentials.authorize(http)
@@ -49,6 +51,8 @@ class AlarmGatherer:
 
    def getNextEvent(self):
       if not self.checkCredentials():
+         print "Error: GCal credentials have expired"
+         print "Remove calendar.dat and run 'python AlarmGatherer.py' to fix"
          raise Exception("GCal credentials not authorized")
 
       now = datetime.datetime.now()
@@ -73,7 +77,12 @@ class AlarmGatherer:
 if __name__ == '__main__':
    print "Running credential check"
    a = AlarmGatherer()
-   if not a.checkCredentials():
+   try:
+      if not a.checkCredentials():
+         raise Exception("Credential check failed")
+   except:
       print "Credentials not correct, please generate new code"
       a.generateAuth()
+      a = AlarmGatherer()
+
    print a.getNextEventTime()
