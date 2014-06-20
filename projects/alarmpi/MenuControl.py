@@ -22,7 +22,7 @@ class MenuControl(threading.Thread):
       self.menuPointer = None
       self.menuTimeout = 0
       self.menuActive = False
-      self.tmp = ""
+      self.tmp = 0
       self.active = False
       self.stopping = False
 
