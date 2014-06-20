@@ -8,6 +8,7 @@ import AlarmThread
 import LcdThread
 import BrightnessThread
 import Settings
+import MediaPlayer
 
 class AlarmPi:
    def __init__(self):
@@ -22,6 +23,10 @@ class AlarmPi:
       print "Loading settings"
       settings = Settings.Settings()
       settings.setup()
+
+      print "Loading media"
+      media = MediaPlayer.MediaPlayer()
+      media.playEffect('activated.wav')
 
       print "Loading clock"
       clock = ClockThread.ClockThread()
@@ -65,8 +70,11 @@ class AlarmPi:
       except (KeyboardInterrupt, SystemExit):
          print "Interrupted, shutting down"
 
-      print "Stopping all services"
+      print "Shutting down"
+      media.playEffect('shutting_down.wav')
+      time.sleep(2)
 
+      print "Stopping all services"
       alarm.stop()
       clock.stop()
       lcd.stop()

@@ -4,33 +4,31 @@ import time
 import datetime
 import calendar
 import threading
-import subprocess
-import os
 import Settings
 import AlarmGatherer
-from mplayer import Player
+import MediaPlayer
 
 class AlarmThread(threading.Thread):
 
    def __init__(self):
       threading.Thread.__init__(self)
       self.stopping=False
-      self.player=False
       self.nextAlarm=None
       self.filenull=open(os.devnull, "w")
       self.snoozing = False
 
       self.settings = Settings.Settings()
+      self.media = MediaPlayer.MediaPlayer()
       self.alarmGatherer = AlarmGatherer.AlarmGatherer()
 
    def stop(self):
       print "Stopping alarm thread"
-      if(self.player):
+      if(self.media.playerActive()):
          self.stopAlarm()
       self.stopping=True
 
    def isAlarmSounding(self):
-      return self.player!=False
+      return (self.media.playerActive() and self.nextAlarm < datetime.datetime.now())
 
    def isSnoozing(self):
       return self.snoozing
@@ -41,6 +39,7 @@ class AlarmThread(threading.Thread):
    def snooze(self):
       print "Snoozing alarm for %s minutes" % (self.settings.getInt('snooze_length'))
       self.silenceAlarm()
+      self.media.playEffect('sleep_mode_activated.wav')
 
       alarmTime = datetime.datetime.now()
       alarmTime += datetime.timedelta(minutes=self.settings.getInt('snooze_length'))
@@ -48,30 +47,8 @@ class AlarmThread(threading.Thread):
       self.snoozing = True
 
    def soundAlarm(self):
-      print "Sounding alarm"
-      station = Settings.STATIONS[self.settings.getInt('station')]
-      print "Playing %s" % (station['name'])
-      self.player = Player()
-      self.player.loadlist(station['url'])
-      self.player.loop = 0
-      print "Alarm process opened"
-
-      # Wait a few seconds and see if the mplayer instance is still running
-      time.sleep(self.settings.getInt('radio_delay'))
-
-      # Fetch the number of mplayer processes running
-      processes = subprocess.Popen('ps aux | grep mplayer | egrep -v "grep" | wc -l', stdout=subprocess.PIPE, shell=True)
-      num = int(processes.stdout.read())
-
-      if num < 2 and self.player is not False:
-         print "Could not find mplayer instance, playing panic alarm"
-         self.player.quit()
-
-         time.sleep(2)
-
-         self.player = Player()
-         self.player.loadfile('/usr/share/scratch/Media/Sounds/Music Loops/GuitarChords2.mp3')
-         self.player.loop = 0
+      print "Alarm triggered"
+      self.media.soundAlarm()
 
    # Only to be called if we're stopping this alarm cycle - see silenceAlarm() for shutting off the player
    def stopAlarm(self):
@@ -88,10 +65,7 @@ class AlarmThread(threading.Thread):
    # Stop whatever is playing
    def silenceAlarm(self):
       print "Silencing alarm"
-      if self.player:
-         self.player.quit()
-         self.player = False
-         print "Player process terminated"
+      self.media.stopPlayer()
 
    def autoSetAlarm(self):
       print "Automatically setting next alarm"
@@ -101,9 +75,11 @@ class AlarmThread(threading.Thread):
          event -= diff
          self.setAlarmTime(event)
          self.settings.set('manual_alarm','') # We've just auto-set an alarm, so clear any manual ones
+         self.media.playEffect('sentry_mode_activated.wav')
       except Exception as e:
          print "WARNING: Could not automatically set alarm"
          print e
+         self.media.playEffect('critical_error.wav')
          self.nextAlarm = None
 
    def manualSetAlarm(self,alarmTime):
@@ -149,7 +125,7 @@ class AlarmThread(threading.Thread):
       while(not self.stopping):
           now = datetime.datetime.now()
 
-          if(self.nextAlarm is not None and self.nextAlarm < now and not self.player):
+          if(self.nextAlarm is not None and self.nextAlarm < now and not self.media.playerActive()):
              self.soundAlarm()
 
           time.sleep(1)
