@@ -33,6 +33,7 @@ class Settings:
       ('wakeup_time','105'), # Time (mins) before event that alarm should be triggered
       ('manual_alarm',''), # Manual alarm time (default not set)
       ('calendar',CalendarCredentials.CALENDAR), # Calendar to gather events from
+      ('holiday_mode','0'), # Is holiday mode (no auto-alarm setting) enabled?
    ]
 
    def __init__(self):

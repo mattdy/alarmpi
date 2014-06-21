@@ -10,7 +10,7 @@ import MediaPlayer
 
 LOOP_TIME=0.1
 
-menuItems = [ "Volume", "Station", "Auto-set Alarm", "Manual Alarm", "Restart" ]
+menuItems = [ "Volume", "Station", "Auto-set Alarm", "Manual Alarm", "Holiday Mode", "Restart" ]
 
 class MenuControl(threading.Thread):
    def __init__(self,alarmThread,shutdownCallback):
@@ -43,6 +43,18 @@ class MenuControl(threading.Thread):
             self.alarmThread.manualSetAlarm(self.__alarmTimeFromInput())
          elif(menuItems[self.menuPointer]=="Station"):
             self.settings.set('station',self.tmp)
+         elif(menuItems[self.menuPointer]=="Holiday Mode"):
+            if self.settings.getInt('holiday_mode')!=self.tmp:
+               # We don't want to do drastic things unless we've changed the setting
+               self.settings.set('holiday_mode',self.tmp)
+               if self.tmp==1:
+                  # We've just enabled holiday mode, so clear any alarms
+                  print "Holiday Mode enabled"
+                  self.alarmThread.stopAlarm()
+               else:
+                  print "Holiday Mode disabled"
+                  # We've just disabled holiday mode, so start auto-setup
+                  self.alarmThread.autoSetAlarm()
 
          self.exitMenu()
       else:
@@ -64,7 +76,8 @@ class MenuControl(threading.Thread):
          self.tmp = {
             'Volume': self.settings.getInt('volume'),
             'Manual Alarm': 0,
-            'Station': self.settings.getInt('station')
+            'Station': self.settings.getInt('station'),
+            'Holiday Mode': self.settings.getInt('holiday_mode')
          }.get(menuItems[self.menuPointer])
 
          print "Selected menu %s" % (menuItems[self.menuPointer])
@@ -87,7 +100,8 @@ class MenuControl(threading.Thread):
          max = {
             'Volume': 100,
             'Manual Alarm': 300,
-            'Station': len(Settings.STATIONS)-1
+            'Station': len(Settings.STATIONS)-1,
+            'Holiday Mode': 1
          }.get(menuItems[self.menuPointer])
 
          if self.tmp>max:
@@ -120,6 +134,9 @@ class MenuControl(threading.Thread):
       except IndexError:
          return ""
 
+   def __getOnOrOff(self):
+      return "Enabled" if self.tmp==1 else "Disabled"
+
    def getMessage(self):
       message = ""
       if self.menuPointer is not None:
@@ -131,7 +148,8 @@ class MenuControl(threading.Thread):
             msg = {
                'Volume': "Volume: %s" % (self.tmp),
                'Manual Alarm': "Alarm at: %s" % (self.__alarmTimeFromInput().strftime("%H:%M")),
-               'Station': "Alarm Station:\n %s" % (self.__getStationName(self.tmp))
+               'Station': "Alarm Station:\n%s" % (self.__getStationName(self.tmp)),
+               'Holiday Mode': "Holiday Mode:\n%s" % (self.__getOnOrOff())
             }.get(menuItems[self.menuPointer])
 
             message = "Set %s" % (msg)
