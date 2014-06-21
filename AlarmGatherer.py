@@ -49,27 +49,28 @@ class AlarmGatherer:
    def generateAuth(self):
       self.credentials = run(self.FLOW, self.storage)
 
-   def getNextEvent(self):
+   def getNextEvent(self,offsetHours=0):
       if not self.checkCredentials():
          print "Error: GCal credentials have expired"
          print "Remove calendar.dat and run 'python AlarmGatherer.py' to fix"
          raise Exception("GCal credentials not authorized")
 
-      now = datetime.datetime.now()
+      time = datetime.datetime.now()
+      time += datetime.timedelta(hours=offsetHours)
 
       result = self.service.events().list(
          calendarId=self.settings.get('calendar'),
          maxResults='1',
          orderBy='startTime',
          singleEvents='true',
-         timeMin="%sZ" % (now.isoformat())
+         timeMin="%sZ" % (time.isoformat())
       ).execute()
 
       events = result.get('items', [])
       return events[0]
 
-   def getNextEventTime(self):
-      nextEvent = self.getNextEvent()
+   def getNextEventTime(self,offsetHours=0):
+      nextEvent = self.getNextEvent(offsetHours=offsetHours)
       start = dateutil.parser.parse(nextEvent['start']['dateTime'],ignoretz=True)
 
       return start

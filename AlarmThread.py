@@ -58,7 +58,7 @@ class AlarmThread(threading.Thread):
       self.nextAlarm = None
       self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
 
-      # Automatically set up our next alarm. FIXME: This might choose the same one as we've just cancelled
+      # Automatically set up our next alarm.
       self.autoSetAlarm()
 
    # Stop whatever is playing
@@ -69,7 +69,9 @@ class AlarmThread(threading.Thread):
    def autoSetAlarm(self):
       print "Automatically setting next alarm"
       try:
-         event = self.alarmGatherer.getNextEventTime() # The time of the next event on our calendar
+         # Assuming if we've just woken up, we don't want to set an alarm for anything in the next 6 hours
+         event = self.alarmGatherer.getNextEventTime(offsetHours=6) # The time of the next event on our calendar.
+         
          diff = datetime.timedelta(minutes=self.settings.getInt('wakeup_time')) # How long before event do we want alarm
          event -= diff
          self.setAlarmTime(event)
