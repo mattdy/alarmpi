@@ -67,6 +67,10 @@ class AlarmThread(threading.Thread):
       self.media.stopPlayer()
 
    def autoSetAlarm(self):
+      if self.settings.getInt('holiday_mode')==1:
+         print "Holiday mode enabled, won't auto-set alarm as requested"
+         return
+
       print "Automatically setting next alarm"
       try:
          # Assuming if we've just woken up, we don't want to set an alarm for anything in the next 6 hours
