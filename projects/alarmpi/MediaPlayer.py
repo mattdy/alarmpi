@@ -54,7 +54,11 @@ class MediaPlayer:
       self.player.loadfile(file)
       self.player.loop = loop
 
-   def playEffect(self,file):
+   def playEffect(self,file): 
+      if self.settings.get('sfx_enabled')==0:
+         # We've got sound effects disabled, so skip
+         return
+
       path = FX_DIRECTORY + file
       print "Playing effect %s" % (path)
       self.effect = Player()

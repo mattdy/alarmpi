@@ -34,6 +34,7 @@ class Settings:
       ('manual_alarm',''), # Manual alarm time (default not set)
       ('calendar',CalendarCredentials.CALENDAR), # Calendar to gather events from
       ('holiday_mode','0'), # Is holiday mode (no auto-alarm setting) enabled?
+      ('sfx_enabled','1'), # Are sound effects enabled?
    ]
 
    def __init__(self):
