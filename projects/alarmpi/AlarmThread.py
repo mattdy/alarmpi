@@ -73,11 +73,16 @@ class AlarmThread(threading.Thread):
 
       print "Automatically setting next alarm"
       try:
-         # Assuming if we've just woken up, we don't want to set an alarm for anything in the next 6 hours
-         event = self.alarmGatherer.getNextEventTime(offsetHours=6) # The time of the next event on our calendar.
+         event = self.alarmGatherer.getNextEventTime() # The time of the next event on our calendar.
+         default = self.alarmGatherer.getDefaultAlarmTime()
          
          diff = datetime.timedelta(minutes=self.settings.getInt('wakeup_time')) # How long before event do we want alarm
          event -= diff
+
+         if event > default: # Is the event time calculated greater than our default wake time
+            print "Calculated wake time of %s is after our default of %s, reverting to default" % (event,default)
+            event = default
+
          self.setAlarmTime(event)
          self.settings.set('manual_alarm','') # We've just auto-set an alarm, so clear any manual ones
          self.media.playEffect('sentry_mode_activated.wav')

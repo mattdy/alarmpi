@@ -49,14 +49,19 @@ class AlarmGatherer:
    def generateAuth(self):
       self.credentials = run(self.FLOW, self.storage)
 
-   def getNextEvent(self,offsetHours=0):
+   # Get the first event that isn't today
+   def getNextEvent(self):
       if not self.checkCredentials():
          print "Error: GCal credentials have expired"
          print "Remove calendar.dat and run 'python AlarmGatherer.py' to fix"
          raise Exception("GCal credentials not authorized")
 
+      # We want to find events tomorrow, rather than another one today
       time = datetime.datetime.now()
-      time += datetime.timedelta(hours=offsetHours)
+      time += datetime.timedelta(days=1) # Move to tomorrow
+      time = time.replace(hour=10,minute=0,second=0,microsecond=0) # Reset to 10am the next day
+      # 10am is late enough that a night shift from today won't be caught, but a morning shift
+      #  from tomorrow will be caught
 
       result = self.service.events().list(
          calendarId=self.settings.get('calendar'),
@@ -69,11 +74,27 @@ class AlarmGatherer:
       events = result.get('items', [])
       return events[0]
 
-   def getNextEventTime(self,offsetHours=0):
-      nextEvent = self.getNextEvent(offsetHours=offsetHours)
+   def getNextEventTime(self):
+      nextEvent = self.getNextEvent()
       start = dateutil.parser.parse(nextEvent['start']['dateTime'],ignoretz=True)
 
       return start
+
+
+   def getDefaultAlarmTime(self):
+      defaultTime = self.settings.get('default_wake')
+      defaultHour = int(defaultTime[:2])
+      defaultMin = int(defaultTime[2:])
+      
+      alarm = datetime.datetime.now()
+
+      if alarm.hour > defaultHour:
+         alarm += datetime.timedelta(days=1) # Move to tomorrow
+
+      alarm = alarm.replace(hour=defaultHour,minute=defaultMin,second=0,microsecond=0)
+
+      return alarm
+
 
 if __name__ == '__main__':
    print "Running credential check"
