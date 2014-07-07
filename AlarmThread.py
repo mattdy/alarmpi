@@ -27,7 +27,7 @@ class AlarmThread(threading.Thread):
       self.stopping=True
 
    def isAlarmSounding(self):
-      return (self.media.playerActive() and self.nextAlarm < datetime.datetime.now())
+      return (self.media.playerActive() and self.nextAlarm is not None and self.nextAlarm < datetime.datetime.now())
 
    def isSnoozing(self):
       return self.snoozing

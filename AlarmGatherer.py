@@ -88,7 +88,7 @@ class AlarmGatherer:
       
       alarm = datetime.datetime.now()
 
-      if alarm.hour > defaultHour:
+      if alarm.hour >= defaultHour:
          alarm += datetime.timedelta(days=1) # Move to tomorrow
 
       alarm = alarm.replace(hour=defaultHour,minute=defaultMin,second=0,microsecond=0)
