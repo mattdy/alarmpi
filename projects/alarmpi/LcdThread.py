@@ -5,6 +5,7 @@ import datetime
 import threading
 import MenuControl
 import Settings
+from Weather import WeatherFetcher
 from InputWorker import InputWorker
 
 #
@@ -36,6 +37,9 @@ class LcdThread(threading.Thread):
       self.message=""
 
       self.settings = Settings.Settings()
+
+      self.weather = WeatherFetcher()
+      self.weather.getWeather() # So we populate the cache straight away
 
       self.menu = MenuControl.MenuControl(alarmThread,shutdownCallback)
       self.menu.setDaemon(True)
@@ -98,7 +102,10 @@ class LcdThread(threading.Thread):
          else:
             now = datetime.datetime.now()
             message = formatDate(now)
-            message+="\n\n"
+            message+="\n"
+            
+            message+=self.weather.getWeather().display()
+            message+="\n"
 
             message+=self.alarmThread.getMenuLine()
 
