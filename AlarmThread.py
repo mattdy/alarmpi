@@ -14,6 +14,7 @@ class AlarmThread(threading.Thread):
       threading.Thread.__init__(self)
       self.stopping=False
       self.nextAlarm=None
+      self.alarmTimeout=None
       self.snoozing = False
 
       self.settings = Settings.Settings()
@@ -44,10 +45,14 @@ class AlarmThread(threading.Thread):
       alarmTime += datetime.timedelta(minutes=self.settings.getInt('snooze_length'))
       self.setAlarmTime(alarmTime)
       self.snoozing = True
+      self.alarmTimeout = None
 
    def soundAlarm(self):
       print "Alarm triggered"
       self.media.soundAlarm()
+      timeout = datetime.datetime.now()
+      timeout += datetime.timedelta(minutes=self.settings.getInt('alarm_timeout'))
+      self.alarmTimeout = timeout
 
    # Only to be called if we're stopping this alarm cycle - see silenceAlarm() for shutting off the player
    def stopAlarm(self):
@@ -56,6 +61,7 @@ class AlarmThread(threading.Thread):
 
       self.snoozing = False
       self.nextAlarm = None
+      self.alarmTimeout = None
       self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
 
       # Automatically set up our next alarm.
@@ -138,5 +144,9 @@ class AlarmThread(threading.Thread):
 
           if(self.nextAlarm is not None and self.nextAlarm < now and not self.media.playerActive()):
              self.soundAlarm()
+
+          if(self.alarmTimeout is not None and self.alarmTimeout < now):
+             print "Alarm timeout reached, stopping alarm"
+             self.stopAlarm()
 
           time.sleep(1)

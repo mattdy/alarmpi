@@ -22,7 +22,7 @@ class Settings:
 
    # Our default settings for when we create the table
    DEFAULTS= [
-      ('volume','40'), # Volume
+      ('volume','30'), # Volume
       ('station','0'), # Radio station to play
       ('radio_delay','10'), # Delay (secs) to wait for radio to start
       ('snooze_length','5'), # Time (mins) to snooze for
@@ -36,6 +36,7 @@ class Settings:
       ('holiday_mode','0'), # Is holiday mode (no auto-alarm setting) enabled?
       ('sfx_enabled','1'), # Are sound effects enabled?
       ('default_wake','0930'), # If our alarm gets scheduled for later than this, ignore and default to this
+      ('alarm_timeout','120'), # If the alarm is still going off after this many minutes, stop it
    ]
 
    def __init__(self):
