@@ -1,5 +1,19 @@
 #!/usr/bin/python
 
+import logging
+import sys
+
+log = logging.getLogger('root')
+log.setLevel(logging.DEBUG)
+
+stream = logging.StreamHandler(sys.stdout)
+stream.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('[%(asctime)s] %(levelname)8s %(module)15s: %(message)s')
+stream.setFormatter(formatter)
+
+log.addHandler(stream)
+
 import time
 import datetime
 import threading
@@ -9,7 +23,7 @@ import LcdThread
 import BrightnessThread
 import Settings
 import MediaPlayer
-
+	
 class AlarmPi:
    def __init__(self):
       self.stopping = False
@@ -18,30 +32,30 @@ class AlarmPi:
       self.stopping = True
 
    def execute(self):
-      print "Starting up AlarmPi"
+      log.info("Starting up AlarmPi")
 
-      print "Loading settings"
+      log.debug("Loading settings")
       settings = Settings.Settings()
       settings.setup()
 
-      print "Loading media"
+      log.debug("Loading media")
       media = MediaPlayer.MediaPlayer()
       media.playEffect('activated.wav')
 
-      print "Loading clock"
+      log.debug("Loading clock")
       clock = ClockThread.ClockThread()
       clock.setDaemon(True)
 
-      print "Loading alarm control"
+      log.debug("Loading alarm control")
       alarm = AlarmThread.AlarmThread()
       alarm.setDaemon(True)
 
-      print "Loading LCD"
+      log.debug("Loading LCD")
       lcd = LcdThread.LcdThread(alarm,self.stop)
       lcd.setDaemon(True)
       lcd.start()
 
-      print "Loading brightness control"
+      log.debug("Loading brightness control")
       bright = BrightnessThread.BrightnessThread()
       bright.setDaemon(True)
       bright.registerControlObject(clock.segment.disp)
@@ -54,13 +68,13 @@ class AlarmPi:
          alarm.autoSetAlarm()
       else:
          alarmTime = datetime.datetime.utcfromtimestamp(manual)
-         print "Loaded previously set manual alarm time of %s" % (alarmTime)
+         log.info("Loaded previously set manual alarm time of %s",alarmTime)
          alarm.manualSetAlarm(alarmTime)
 
-      print "Starting clock"
+      log.debug("Starting clock")
       clock.start()
 
-      print "Starting alarm control"
+      log.debug("Starting alarm control")
       alarm.start()
 
       # Main loop where we just spin until we receive a shutdown request
@@ -68,19 +82,19 @@ class AlarmPi:
          while(self.stopping is False):
             time.sleep(1)
       except (KeyboardInterrupt, SystemExit):
-         print "Interrupted, shutting down"
+         log.warn("Interrupted, shutting down")
 
-      print "Shutting down"
+      log.warn("Shutting down")
       media.playEffect('shutting_down.wav')
       time.sleep(2)
 
-      print "Stopping all services"
+      log.info("Stopping all services")
       alarm.stop()
       clock.stop()
       lcd.stop()
       bright.stop()
 
-      print "Shutdown complete, now exiting"
+      log.info("Shutdown complete, now exiting")
 
       time.sleep(2) # To give threads time to shut down
 

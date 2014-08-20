@@ -1,7 +1,9 @@
 import gflags
 import httplib2
 import datetime
+import pytz
 import dateutil.parser
+import logging
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -10,6 +12,8 @@ from oauth2client.tools import run
 
 import Settings
 import CalendarCredentials # File with variables CLIENT_ID, CLIENT_SECRET, DEVELOPER_KEY and CALENDAR
+
+log = logging.getLogger('root')
 
 FLAGS = gflags.FLAGS
 
@@ -29,8 +33,8 @@ class AlarmGatherer:
       self.storage = Storage('calendar.dat')
       self.credentials = self.storage.get()
       if not self.checkCredentials():
-         print "Error: GCal credentials have expired."
-         print "Remove calendar.dat and run 'python AlarmGatherer.py' to fix"
+         log.error("GCal credentials have expired")
+         log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
          return
 
       http = httplib2.Http()
@@ -52,8 +56,8 @@ class AlarmGatherer:
    # Get the first event that isn't today
    def getNextEvent(self):
       if not self.checkCredentials():
-         print "Error: GCal credentials have expired"
-         print "Remove calendar.dat and run 'python AlarmGatherer.py' to fix"
+         log.error("GCal credentials have expired")
+         log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
          raise Exception("GCal credentials not authorized")
 
       # We want to find events tomorrow, rather than another one today
@@ -76,7 +80,9 @@ class AlarmGatherer:
 
    def getNextEventTime(self):
       nextEvent = self.getNextEvent()
-      start = dateutil.parser.parse(nextEvent['start']['dateTime'],ignoretz=True)
+      start = dateutil.parser.parse(nextEvent['start']['dateTime'])
+      #start = dateutil.parser.parse(nextEvent['start']['dateTime'],ignoretz=True)
+      #start = start.replace(tzinfo=pytz.timezone('Europe/London'))
 
       return start
 
@@ -86,7 +92,7 @@ class AlarmGatherer:
       defaultHour = int(defaultTime[:2])
       defaultMin = int(defaultTime[2:])
       
-      alarm = datetime.datetime.now()
+      alarm = datetime.datetime.now(pytz.timezone('Europe/London'))
       alarm += datetime.timedelta(days=1) # Move to tomorrow
       alarm = alarm.replace(hour=defaultHour,minute=defaultMin,second=0,microsecond=0)
 
