@@ -2,6 +2,7 @@
 
 import time
 import datetime
+import pytz
 import threading
 from Adafruit_7Segment import SevenSegment
 
@@ -18,7 +19,7 @@ class ClockThread(threading.Thread):
 
    def run(self):
       while(not self.stopping):
-          now = datetime.datetime.now()
+          now = datetime.datetime.now(pytz.timezone('Europe/London'))
           hour = now.hour
 
           minute = now.minute

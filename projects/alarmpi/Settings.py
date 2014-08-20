@@ -1,6 +1,9 @@
 import sqlite3
 import subprocess
 import CalendarCredentials
+import logging
+
+log = logging.getLogger('root')
 
 # Radio stations we can play through mplayer
 STATIONS = [
@@ -37,6 +40,7 @@ class Settings:
       ('sfx_enabled','1'), # Are sound effects enabled?
       ('default_wake','0930'), # If our alarm gets scheduled for later than this, ignore and default to this
       ('alarm_timeout','120'), # If the alarm is still going off after this many minutes, stop it
+      ('weather_location','Gatwick'), # The location to load weather for
    ]
 
    def __init__(self):
@@ -54,7 +58,7 @@ class Settings:
       self.setVolume(self.getInt('volume'))
 
    def firstRun(self):
-      print "Running first-time SQLite set-up"
+      log.warn("Running first-time SQLite set-up")
       self.c.execute('CREATE TABLE '+self.TABLE_NAME+' (name text, value text)')
       self.c.executemany('INSERT INTO '+self.TABLE_NAME+' VALUES (?,?)',self.DEFAULTS)
       self.conn.commit()
@@ -70,7 +74,7 @@ class Settings:
       try:
          return int(self.get(key))
       except ValueError:
-         print "Could not fetch %s as integer, value was [%s], returning 0" % (key,self.get(key))
+         log.warn("Could not fetch %s as integer, value was [%s], returning 0",key,self.get(key))
          return 0
 
    def set(self,key,val):
@@ -84,7 +88,7 @@ class Settings:
 
    def setVolume(self,val):
       subprocess.Popen("/usr/local/bin/vol %s" % (val), stdout=subprocess.PIPE, shell=True)
-      print "Volume adjusted to %s" % (val)
+      log.info("Volume adjusted to %s", val)
 
    def __del__(self):
       self.conn.close()

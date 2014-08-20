@@ -2,6 +2,7 @@ from LCDControl.LCDControl import LCDControl
 import gaugette.rotary_encoder
 import time
 import datetime
+import pytz
 import threading
 import MenuControl
 import Settings
@@ -100,7 +101,7 @@ class LcdThread(threading.Thread):
          if self.menu.isActive():
             message = self.menu.getMessage()
          else:
-            now = datetime.datetime.now()
+            now = datetime.datetime.now(pytz.timezone('Europe/London'))
             message = formatDate(now)
             message+="\n"
             

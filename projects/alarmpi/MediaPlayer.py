@@ -2,6 +2,9 @@ import time
 from mplayer import Player
 import Settings
 import subprocess
+import logging
+
+log = logging.getLogger('root')
 
 PANIC_ALARM = '/usr/share/scratch/Media/Sounds/Music Loops/GuitarChords2.mp3'
 FX_DIRECTORY = '/root/sounds/'
@@ -17,9 +20,9 @@ class MediaPlayer:
       return self.player!=False
 
    def soundAlarm(self):
-      print "Playing alarm"
+      log.info("Playing alarm")
       self.playStation()
-      print "Alarm process opened"
+      log.debug("Alarm process opened")
 
       # Wait a few seconds and see if the mplayer instance is still running
       time.sleep(self.settings.getInt('radio_delay'))
@@ -32,7 +35,7 @@ class MediaPlayer:
       num = int(processes.stdout.read())
 
       if num < 2 and self.player is not False:
-         print "Could not find mplayer instance, playing panic alarm"
+         log.error("Could not find mplayer instance, playing panic alarm")
          self.stopPlayer()
          time.sleep(2)
          self.playMedia(PANIC_ALARM,0)
@@ -43,13 +46,13 @@ class MediaPlayer:
 
       station = Settings.STATIONS[station]
 
-      print "Playing station %s" % (station['name'])
+      log.info("Playing station %s", station['name'])
       self.player = Player()
       self.player.loadlist(station['url'])
       self.player.loop = 0
 
    def playMedia(self,file,loop=-1):
-      print "Playing file %s" % (file)
+      log.info("Playing file %s", file)
       self.player = Player()
       self.player.loadfile(file)
       self.player.loop = loop
@@ -60,7 +63,7 @@ class MediaPlayer:
          return
 
       path = FX_DIRECTORY + file
-      print "Playing effect %s" % (path)
+      log.info("Playing effect %s", path)
       self.effect = Player()
       self.effect.loadfile(path)
       self.effect.loop=-1
@@ -69,4 +72,4 @@ class MediaPlayer:
       if self.player:
          self.player.quit()
          self.player = False
-         print "Player process terminated"
+         log.info("Player process terminated")

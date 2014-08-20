@@ -1,29 +1,43 @@
 import json
 import datetime
+import pytz
 import urllib2
+import Settings
+import logging
+
+log = logging.getLogger('root')
 
 # Fetches weather information
 class WeatherFetcher:
    def __init__(self):
       self.cacheTimeout = None
       self.cache = None
+      self.settings = Settings.Settings()
 
    def getWeather(self):
-      if(self.cache is None or self.cacheTimeout is None or self.cacheTimeout < datetime.datetime.now()):
-         print "Weather cache expired or doesn't exist, re-fetching"
-         # TODO: don't hardcode place
-         # TODO: handle what happens if openweathermap is unavailable
-         response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q=Gatwick')
-         response = json.loads(response.read())
-
+      if(self.cache is None or self.cacheTimeout is None or self.cacheTimeout < datetime.datetime.now(pytz.timezone('Europe/London'))):
+         log.info("Weather cache expired or doesn't exist, re-fetching")
          weather = Weather()
+
+         place = self.settings.get('weather_location')
+         if(place is None or place is ""):
+            place = "Gatwick" # Default to Gatwick
+
+         # TODO: don't hardcode place
+         try:
+            response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place))
+            response = json.loads(response.read())
+         except:
+            log.error("Error fetching weather")
+            return weather # return empty Weather object
+    
          weather.setTempK(response['main']['temp'])
          weather.setCondition(response['weather'][0]['description'])
          weather.setWindSpeedMps(response['wind']['speed'])
          weather.setWindDirection(response['wind']['deg'])
          weather.setPressure(response['main']['pressure'])
 
-         timeout = datetime.datetime.now()
+         timeout = datetime.datetime.now(pytz.timezone('Europe/London'))
          timeout += datetime.timedelta(minutes=30) # Cache for 30 minutes
          self.cacheTimeout = timeout
 
@@ -59,10 +73,12 @@ class Weather:
       self.wspeed = wspeed
 
    def setWindDirection(self,wdir):
+      if wdir==0:
+         wdir = 360
       self.wdir = wdir
 
    def setPressure(self,pressure):
       self.pressure = int(pressure)
 
    def display(self):
-      return "%sC, %s@%s, %shPa\n%s" % (self.temp,self.wdir,self.wspeed,self.pressure,self.condition)
+      return "%sC, %03d@%s, %shPa\n%s" % (self.temp,self.wdir,self.wspeed,self.pressure,self.condition)

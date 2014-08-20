@@ -2,11 +2,15 @@
 
 import time
 import datetime
+import pytz
 import threading
 import sys
 import subprocess
 import Settings
 import MediaPlayer
+import logging
+
+log = logging.getLogger('root')
 
 LOOP_TIME=0.1
 
@@ -49,10 +53,10 @@ class MenuControl(threading.Thread):
                self.settings.set('holiday_mode',self.tmp)
                if self.tmp==1:
                   # We've just enabled holiday mode, so clear any alarms
-                  print "Holiday Mode enabled"
+                  log.debug("Holiday Mode enabled")
                   self.alarmThread.stopAlarm()
                else:
-                  print "Holiday Mode disabled"
+                  log.debug("Holiday Mode disabled")
                   # We've just disabled holiday mode, so start auto-setup
                   self.alarmThread.autoSetAlarm()
 
@@ -80,7 +84,7 @@ class MenuControl(threading.Thread):
             'Holiday Mode': self.settings.getInt('holiday_mode')
          }.get(menuItems[self.menuPointer])
 
-         print "Selected menu %s" % (menuItems[self.menuPointer])
+         log.debug("Selected menu %s", menuItems[self.menuPointer])
 
    def cancel(self):
       self.exitMenu()
@@ -117,7 +121,7 @@ class MenuControl(threading.Thread):
          self.menuPointer = len(menuItems)-1
 
    def __alarmTimeFromInput(self):
-      manAlarmTime = datetime.datetime.now()
+      manAlarmTime = datetime.datetime.now(pytz.timezone('Europe/London'))
       manAlarmTime += datetime.timedelta(minutes=1 + (5*self.tmp))
       manAlarmTime = manAlarmTime.replace(
          minute = (manAlarmTime.minute - (manAlarmTime.minute%5)),
