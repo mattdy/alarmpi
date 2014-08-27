@@ -48,6 +48,11 @@ class WeatherFetcher:
    def forceUpdate(self):
       self.cacheTimeout = None
 
+# Take a number or string, and put spaces between each character, replacing 0 for the word zero
+def splitNumber(num):
+   split = ' '.join("%s" % num)
+   return split.replace("0","zero")
+
 # Holds our weather information
 class Weather:
    def __init__(self):
@@ -82,3 +87,12 @@ class Weather:
 
    def display(self):
       return "%sC, %03d@%s, %shPa\n%s" % (self.temp,self.wdir,self.wspeed,self.pressure,self.condition)
+
+   def speech(self):
+      speech = ""
+      speech += "The weather is currently %s. " % (self.condition)
+      speech += "Temperature %s degrees, " % (self.temp)
+      speech += "wind %s degrees at %s knots, " % (splitNumber(self.wdir), self.wspeed)
+      speech += "Q N H %s hectopascals" % (splitNumber(self.pressure))
+
+      return speech

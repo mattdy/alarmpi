@@ -9,8 +9,12 @@ import Settings
 import AlarmGatherer
 import MediaPlayer
 import logging
+from Weather import WeatherFetcher
 
 log = logging.getLogger('root')
+
+def suffix(d):
+   return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
 
 class AlarmThread(threading.Thread):
 
@@ -24,6 +28,7 @@ class AlarmThread(threading.Thread):
       self.settings = Settings.Settings()
       self.media = MediaPlayer.MediaPlayer()
       self.alarmGatherer = AlarmGatherer.AlarmGatherer()
+      self.weather = WeatherFetcher()
 
    def stop(self):
       log.info("Stopping alarm thread")
@@ -67,6 +72,29 @@ class AlarmThread(threading.Thread):
       self.nextAlarm = None
       self.alarmTimeout = None
       self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
+
+      if self.settings.getInt('weather_on_alarm')==1:
+         log.debug("Playing weather information")
+
+         now = datetime.datetime.now(pytz.timezone('Europe/London'))
+
+         weather = ""
+         try:
+            weather = self.weather.getWeather().speech()
+         except Exception:
+            log.exception("Failed to get weather information")
+
+         day = now.strftime("%d").lstrip("0")
+         day += suffix(now.day)
+
+         hour = now.strftime("%I").lstrip("0")
+
+         # Today is Monday 31st of October, the time is 9 56 AM
+         speech = "Good morning Matt. Today is %s %s %s, the time is %s %s %s. " % (now.strftime("%A"), day, now.strftime("%B"), hour, now.strftime("%M"), now.strftime("%p"))
+         speech += weather
+
+         self.media.playSpeech(speech)
+      
 
       # Automatically set up our next alarm.
       self.autoSetAlarm()
