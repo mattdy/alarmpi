@@ -43,7 +43,7 @@ class AlarmThread(threading.Thread):
    def snooze(self):
       log.info("Snoozing alarm for %s minutes", self.settings.getInt('snooze_length'))
       self.silenceAlarm()
-      self.media.playEffect('sleep_mode_activated.wav')
+      # self.media.playEffect('sleep_mode_activated.wav') # Removed to avoid race condition where alarm would re-trigger off old time. Plus it's a bit annoying
 
       alarmTime = datetime.datetime.now(pytz.timezone('Europe/London'))
       alarmTime += datetime.timedelta(minutes=self.settings.getInt('snooze_length'))
