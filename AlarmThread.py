@@ -111,6 +111,18 @@ class AlarmThread(threading.Thread):
       self.nextAlarm = alarmTime
       log.info("Alarm set for %s", alarmTime)
 
+   # Number of seconds until alarm is triggered
+   def alarmInSeconds(self):
+      now = datetime.datetime.now(pytz.timezone('Europe/London'))
+      if self.nextAlarm is None:
+         return -1
+
+      if self.isSnoozing() or self.isAlarmSounding():
+         return 0
+
+      diff = self.nextAlarm - now
+      return diff.seconds
+
    # Return a line of text describing the alarm state
    def getMenuLine(self):
       now = datetime.datetime.now(pytz.timezone('Europe/London'))
