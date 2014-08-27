@@ -41,6 +41,7 @@ class Settings:
       ('default_wake','0930'), # If our alarm gets scheduled for later than this, ignore and default to this
       ('alarm_timeout','120'), # If the alarm is still going off after this many minutes, stop it
       ('weather_location','Gatwick'), # The location to load weather for
+      ('weather_on_alarm','1'), # Read out the weather on alarm cancel
       ('preempt_cancel','600'), # Number of seconds before an alarm that we're allowed to cancel it
    ]
 

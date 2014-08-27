@@ -68,6 +68,11 @@ class MediaPlayer:
       self.effect.loadfile(path)
       self.effect.loop=-1
 
+   # Play some speech. Warning: Blocks until we're done speaking
+   def playSpeech(self,text):
+      play = subprocess.Popen('/usr/bin/googletts "%s"' % (text), shell=True)
+      play.wait()
+
    def stopPlayer(self):
       if self.player:
          self.player.quit()
