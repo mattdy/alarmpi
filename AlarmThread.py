@@ -100,7 +100,7 @@ class AlarmThread(threading.Thread):
       try:
          log.debug("Sending wake notification to HomeControl")
          urllib2.urlopen("http://homecontrol:9090/CMD?isSleeping=OFF").read()
-      except Exception
+      except Exception:
          log.exception("Failed to send wake state to HomeControl")
       
 
