@@ -23,6 +23,9 @@ class Settings:
    DB_NAME='settings.db'
    TABLE_NAME='settings'
 
+   # Path to executable to modify volume
+   VOL_CMD='/usr/bin/vol'
+
    # Our default settings for when we create the table
    DEFAULTS= [
       ('volume','80'), # Volume
@@ -89,7 +92,7 @@ class Settings:
       self.conn.commit()
 
    def setVolume(self,val):
-      subprocess.Popen("/usr/local/bin/vol %s" % (val), stdout=subprocess.PIPE, shell=True)
+      subprocess.Popen("%s %s" % (self.VOL_CMD,val), stdout=subprocess.PIPE, shell=True)
       log.info("Volume adjusted to %s", val)
 
    def __del__(self):
