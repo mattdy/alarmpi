@@ -9,6 +9,7 @@ import Settings
 import AlarmGatherer
 import MediaPlayer
 import logging
+import urllib2
 from Weather import WeatherFetcher
 
 log = logging.getLogger('root')
@@ -94,6 +95,13 @@ class AlarmThread(threading.Thread):
          speech += weather
 
          self.media.playSpeech(speech)
+
+      # Send a notification to HomeControl (OpenHAB) that we're now awake
+      try:
+         log.debug("Sending wake notification to HomeControl")
+         urllib2.urlopen("http://homecontrol:9090/CMD?isSleeping=OFF").read()
+      except Exception
+         log.exception("Failed to send wake state to HomeControl")
       
 
       # Automatically set up our next alarm.
