@@ -86,6 +86,12 @@ class AlarmGatherer:
 
       return start
 
+   def getNextEventLocation(self):
+      nextEvent = self.getNextEvent()
+      if(nextEvent['location']):
+         return nextEvent['location']
+      
+      return None
 
    def getDefaultAlarmTime(self):
       defaultTime = self.settings.get('default_wake')
