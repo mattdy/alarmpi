@@ -23,13 +23,15 @@ class WeatherFetcher:
          if(place is None or place is ""):
             place = "Gatwick" # Default to Gatwick
 
-         # TODO: don't hardcode place
          try:
             response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place))
             response = json.loads(response.read())
          except:
-            log.error("Error fetching weather")
-            return weather # return empty Weather object
+            log.exception("Error fetching weather")
+            if(self.cache is not None):
+               return self.cache # we have a cache, so return that rather than an empty object
+            else:
+               return weather # return empty Weather object as we have nothing else
     
          weather.setTempK(response['main']['temp'])
          weather.setCondition(response['weather'][0]['description'])
