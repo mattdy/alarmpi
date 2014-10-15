@@ -11,6 +11,7 @@ import MediaPlayer
 import logging
 import urllib2
 from Weather import WeatherFetcher
+from TravelCalculator import TravelCalculator
 
 log = logging.getLogger('root')
 
@@ -30,6 +31,7 @@ class AlarmThread(threading.Thread):
       self.media = MediaPlayer.MediaPlayer()
       self.alarmGatherer = AlarmGatherer.AlarmGatherer()
       self.weather = WeatherFetcher()
+      self.travel = TravelCalculator(self.settings.get('location_home'))
 
    def stop(self):
       log.info("Stopping alarm thread")
@@ -118,10 +120,19 @@ class AlarmThread(threading.Thread):
       try:
          event = self.alarmGatherer.getNextEventTime() # The time of the next event on our calendar.
          default = self.alarmGatherer.getDefaultAlarmTime()
-         
+
          diff = datetime.timedelta(minutes=self.settings.getInt('wakeup_time')) # How long before event do we want alarm
          event -= diff
 
+         # Adjust for travel time
+         # Find out where our next event is, and then calculate travel time to there
+         # TODO: Allow adjust after initial set (so we account for traffic in real-time)
+         destination = self.alarmGatherer.getNextEventLocation()
+         if(destination is None):
+            destination = self.settings.get('location_work')
+         travelTime = datetime.timedelta(minutes=self.travel.getTravelTime(destination))
+         event -= travelTime
+         
          if event > default: # Is the event time calculated greater than our default wake time
             log.debug("Calculated wake time of %s is after our default of %s, reverting to default",event,default)
             event = default

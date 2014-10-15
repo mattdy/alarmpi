@@ -36,7 +36,7 @@ class Settings:
       ('min_brightness','1'), # Minimum brightness
       ('brightness_timeout','20'), # Time (secs) after which we should revert to auto-brightness
       ('menu_timeout','20'), # Time (secs) after which an un-touched menu should close
-      ('wakeup_time','105'), # Time (mins) before event that alarm should be triggered
+      ('wakeup_time','75'), # Time (mins) before event that alarm should be triggered (excluding travel time) (30 mins pre-shift + 45 mins wakeup)
       ('manual_alarm',''), # Manual alarm time (default not set)
       ('calendar',CalendarCredentials.CALENDAR), # Calendar to gather events from
       ('holiday_mode','0'), # Is holiday mode (no auto-alarm setting) enabled?
@@ -46,6 +46,8 @@ class Settings:
       ('weather_location','Gatwick'), # The location to load weather for
       ('weather_on_alarm','1'), # Read out the weather on alarm cancel
       ('preempt_cancel','600'), # Number of seconds before an alarm that we're allowed to cancel it
+      ('location_home','Lyndale Road, Redhill, Surrey, UK'), # Location for home
+      ('location_work','Gatwick Airport'), # Default location for work (if lookup from event fails)
    ]
 
    def __init__(self):
