@@ -54,7 +54,7 @@ class MenuControl(threading.Thread):
                if self.tmp==1:
                   # We've just enabled holiday mode, so clear any alarms
                   log.debug("Holiday Mode enabled")
-                  self.alarmThread.stopAlarm()
+                  self.alarmThread.clearAlarm()
                else:
                   log.debug("Holiday Mode disabled")
                   # We've just disabled holiday mode, so start auto-setup

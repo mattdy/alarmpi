@@ -69,10 +69,7 @@ class AlarmThread(threading.Thread):
       log.info("Stopping alarm")
       self.silenceAlarm()
 
-      self.snoozing = False
-      self.nextAlarm = None
-      self.alarmTimeout = None
-      self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
+      self.clearAlarm()
 
       if self.settings.getInt('weather_on_alarm')==1:
          log.debug("Playing weather information")
@@ -146,6 +143,12 @@ class AlarmThread(threading.Thread):
    def setAlarmTime(self,alarmTime):
       self.nextAlarm = alarmTime
       log.info("Alarm set for %s", alarmTime)
+
+   def clearAlarm(self):
+      self.snoozing = False
+      self.nextAlarm = None
+      self.alarmTimeout = None
+      self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet      
 
    # Number of seconds until alarm is triggered
    def alarmInSeconds(self):
