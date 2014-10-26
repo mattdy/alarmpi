@@ -32,6 +32,8 @@ class AlarmThread(threading.Thread):
       self.alarmGatherer = AlarmGatherer.AlarmGatherer()
       self.weather = WeatherFetcher()
 
+      self.fromEvent = False # False if auto or manual, True if from an event
+
       self.travel = TravelCalculator(self.settings.get('location_home'))
       self.travelTime = 0 # The travel time we last fetched
       self.travelCalculated = False # Have we re-calculated travel for this alarm cycle?
@@ -61,6 +63,7 @@ class AlarmThread(threading.Thread):
       self.setAlarmTime(alarmTime)
       self.snoozing = True
       self.alarmTimeout = None
+      self.fromEvent = False
 
    def soundAlarm(self):
       log.info("Alarm triggered")
@@ -135,6 +138,9 @@ class AlarmThread(threading.Thread):
          if event > default: # Is the event time calculated greater than our default wake time
             log.debug("Calculated wake time of %s is after our default of %s, reverting to default",event,default)
             event = default
+            self.fromEvent = False
+         else:
+            self.fromEvent = True
 
          self.setAlarmTime(event)
          self.settings.set('manual_alarm','') # We've just auto-set an alarm, so clear any manual ones
@@ -166,6 +172,7 @@ class AlarmThread(threading.Thread):
 
    def manualSetAlarm(self,alarmTime):
       log.info("Manually setting next alarm to %s",alarmTime)
+      self.fromEvent = False
       self.settings.set('manual_alarm',calendar.timegm(alarmTime.utctimetuple()))
       self.setAlarmTime(alarmTime)
       self.media.playEffect('naptime.wav')
@@ -181,6 +188,7 @@ class AlarmThread(threading.Thread):
       self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
       self.travelTime = 0
       self.travelCalculated = False
+      self.fromEvent = False
 
    # Number of seconds until alarm is triggered
    def alarmInSeconds(self):
@@ -228,8 +236,8 @@ class AlarmThread(threading.Thread):
       while(not self.stopping):
           now = datetime.datetime.now(pytz.timezone('Europe/London'))
 
-          if(self.nextAlarm is not None and self.alarmInSeconds() < 3600 and not self.travelCalculated):
-             # We're inside 1hr of the alarm being triggered, and we've not taken into account the current traffic situation
+          if(self.nextAlarm is not None and self.fromEvent and self.alarmInSeconds() < 3600 and not self.travelCalculated):
+             # We're inside 1hr of an event alarm being triggered, and we've not taken into account the current traffic situation
              self.travelAdjustAlarm()
 
           if(self.nextAlarm is not None and self.nextAlarm < now and not self.media.playerActive()):
