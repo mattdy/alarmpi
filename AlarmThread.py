@@ -31,7 +31,10 @@ class AlarmThread(threading.Thread):
       self.media = MediaPlayer.MediaPlayer()
       self.alarmGatherer = AlarmGatherer.AlarmGatherer()
       self.weather = WeatherFetcher()
+
       self.travel = TravelCalculator(self.settings.get('location_home'))
+      self.travelTime = 0 # The travel time we last fetched
+      self.travelCalculated = False # Have we re-calculated travel for this alarm cycle?
 
    def stop(self):
       log.info("Stopping alarm thread")
@@ -125,13 +128,9 @@ class AlarmThread(threading.Thread):
          event -= diff
 
          # Adjust for travel time
-         # Find out where our next event is, and then calculate travel time to there
-         # TODO: Allow adjust after initial set (so we account for traffic in real-time)
-         destination = self.alarmGatherer.getNextEventLocation()
-         if(destination is None):
-            destination = self.settings.get('location_work')
-         travelTime = datetime.timedelta(minutes=self.travel.getTravelTime(destination))
-         event -= travelTime
+         self.travelTime = self.fetchTravelTime()
+         travelDelta = datetime.timedelta(minutes=self.travelTime)
+         event -= travelDelta
          
          if event > default: # Is the event time calculated greater than our default wake time
             log.debug("Calculated wake time of %s is after our default of %s, reverting to default",event,default)
@@ -144,6 +143,26 @@ class AlarmThread(threading.Thread):
          log.exception("Could not automatically set alarm",e)
          self.media.playEffect('critical_error.wav')
          self.nextAlarm = None
+
+   # Find out where our next event is, and then calculate travel time to there
+   def fetchTravelTime(self):
+      destination = self.alarmGatherer.getNextEventLocation()
+      if(destination is None):
+         destination = self.settings.get('location_work')
+      travelTime = self.travel.getTravelTime(destination)
+
+      return travelTime
+
+   def travelAdjustAlarm(self):
+      log.info("Adjusting alarm for current travel time")
+      newTravelTime = self.fetchTravelTime()
+      travelDiff = newTravelTime - self.travelTime
+      log.debug("Old travel time: %s, new travel time: %s, diff: %s" % (self.travelTime, newTravelTime, travelDiff))
+      
+      adjustDelta = datetime.timedelta(minutes=travelDiff)
+      newTime = self.nextAlarm - adjustDelta
+      self.setAlarmTime(newTime)
+      self.travelCalculated = True
 
    def manualSetAlarm(self,alarmTime):
       log.info("Manually setting next alarm to %s",alarmTime)
@@ -159,7 +178,9 @@ class AlarmThread(threading.Thread):
       self.snoozing = False
       self.nextAlarm = None
       self.alarmTimeout = None
-      self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet      
+      self.settings.set('manual_alarm','') # If we've just stopped an alarm, we can't have a manual one set yet
+      self.travelTime = 0
+      self.travelCalculated = False
 
    # Number of seconds until alarm is triggered
    def alarmInSeconds(self):
@@ -206,6 +227,10 @@ class AlarmThread(threading.Thread):
    def run(self):
       while(not self.stopping):
           now = datetime.datetime.now(pytz.timezone('Europe/London'))
+
+          if(self.nextAlarm is not None and self.alarmInSeconds() < 3600 and not self.travelCalculated):
+             # We're inside 1hr of the alarm being triggered, and we've not taken into account the current traffic situation
+             self.travelAdjustAlarm()
 
           if(self.nextAlarm is not None and self.nextAlarm < now and not self.media.playerActive()):
              self.soundAlarm()
