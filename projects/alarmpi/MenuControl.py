@@ -14,7 +14,7 @@ log = logging.getLogger('root')
 
 LOOP_TIME=0.1
 
-menuItems = [ "Volume", "Station", "Auto-set Alarm", "Manual Alarm", "Holiday Mode", "Restart" ]
+menuItems = [ "Volume", "Station", "Auto-set Alarm", "Manual Alarm", "Holiday Mode", "Play/Stop Radio", "Restart" ]
 
 class MenuControl(threading.Thread):
    def __init__(self,alarmThread,shutdownCallback):
@@ -35,6 +35,9 @@ class MenuControl(threading.Thread):
    def isActive(self):
       return self.active
 
+   def backgroundRadioActive(self):
+      return self.media.playerActive()
+
    def select(self):
       if self.menuPointer is None:
          return # We can ignore this button if we're not in a menu
@@ -47,6 +50,10 @@ class MenuControl(threading.Thread):
             self.alarmThread.manualSetAlarm(self.__alarmTimeFromInput())
          elif(menuItems[self.menuPointer]=="Station"):
             self.settings.set('station',self.tmp)
+         elif(menuItems[self.menuPointer]=="Play/Stop Radio"):
+            # Because of the check in the !self.menuActive below, we must be requesting to play if we get here
+            log.debug("Request to start playing %s" % (self.__getStationName(self.tmp)))
+            self.media.playStation(self.tmp)
          elif(menuItems[self.menuPointer]=="Holiday Mode"):
             if self.settings.getInt('holiday_mode')!=self.tmp:
                # We don't want to do drastic things unless we've changed the setting
@@ -74,6 +81,13 @@ class MenuControl(threading.Thread):
             self.exitMenu()
             return
 
+         if(menuItems[self.menuPointer]=="Play/Stop Radio" and self.media.playerActive()):
+            # Media player active, so stop it
+            log.debug("Stopping radio player")
+            self.media.stopPlayer()
+            self.exitMenu()
+            return
+
          self.menuActive = True
 
          # Set our temporary variable to current setting
@@ -81,12 +95,16 @@ class MenuControl(threading.Thread):
             'Volume': self.settings.getInt('volume'),
             'Manual Alarm': 0,
             'Station': self.settings.getInt('station'),
-            'Holiday Mode': self.settings.getInt('holiday_mode')
+            'Holiday Mode': self.settings.getInt('holiday_mode'),
+            'Play/Stop Radio': self.settings.getInt('station'),
          }.get(menuItems[self.menuPointer])
 
          log.debug("Selected menu %s", menuItems[self.menuPointer])
 
    def cancel(self):
+      if self.backgroundRadioActive():
+         self.media.stopPlayer()
+
       self.exitMenu()
 
    def scroll(self,direction):
@@ -105,7 +123,8 @@ class MenuControl(threading.Thread):
             'Volume': 100,
             'Manual Alarm': 300,
             'Station': len(Settings.STATIONS)-1,
-            'Holiday Mode': 1
+            'Holiday Mode': 1,
+            'Play/Stop Radio': len(Settings.STATIONS)-1
          }.get(menuItems[self.menuPointer])
 
          if self.tmp>max:
@@ -153,7 +172,8 @@ class MenuControl(threading.Thread):
                'Volume': "Volume: %s" % (self.tmp),
                'Manual Alarm': "Alarm at: %s" % (self.__alarmTimeFromInput().strftime("%H:%M")),
                'Station': "Alarm Station:\n%s" % (self.__getStationName(self.tmp)),
-               'Holiday Mode': "Holiday Mode:\n%s" % (self.__getOnOrOff())
+               'Holiday Mode': "Holiday Mode:\n%s" % (self.__getOnOrOff()),
+               'Play/Stop Radio': "Play station:\n%s" % (self.__getStationName(self.tmp))
             }.get(menuItems[self.menuPointer])
 
             message = "Set %s" % (msg)
