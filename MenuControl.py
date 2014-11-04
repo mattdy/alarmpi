@@ -195,7 +195,6 @@ class MenuControl(threading.Thread):
       while(not self.stopping):
          time.sleep(LOOP_TIME)
          if self.menuTimeout > calcTimeout:
-            self.media.playEffect('are_you_still_there.wav')            
             self.exitMenu()
          elif(self.menuPointer is not None):
             self.menuTimeout+=1

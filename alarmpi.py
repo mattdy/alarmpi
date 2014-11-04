@@ -40,7 +40,7 @@ class AlarmPi:
 
       log.debug("Loading media")
       media = MediaPlayer.MediaPlayer()
-      media.playEffect('activated.wav')
+      media.playVoice('Starting up')
 
       log.debug("Loading clock")
       clock = ClockThread.ClockThread()
@@ -85,7 +85,7 @@ class AlarmPi:
          log.warn("Interrupted, shutting down")
 
       log.warn("Shutting down")
-      media.playEffect('shutting_down.wav')
+      media.playVoice('Shutting down. Goodbye')
       time.sleep(2)
 
       log.info("Stopping all services")

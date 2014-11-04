@@ -56,7 +56,6 @@ class AlarmThread(threading.Thread):
    def snooze(self):
       log.info("Snoozing alarm for %s minutes", self.settings.getInt('snooze_length'))
       self.silenceAlarm()
-      # self.media.playEffect('sleep_mode_activated.wav') # Removed to avoid race condition where alarm would re-trigger off old time. Plus it's a bit annoying
 
       alarmTime = datetime.datetime.now(pytz.timezone('Europe/London'))
       alarmTime += datetime.timedelta(minutes=self.settings.getInt('snooze_length'))
@@ -144,10 +143,10 @@ class AlarmThread(threading.Thread):
 
          self.setAlarmTime(event)
          self.settings.set('manual_alarm','') # We've just auto-set an alarm, so clear any manual ones
-         self.media.playEffect('sentry_mode_activated.wav')
+         self.media.playVoice('Automatic alarm has been set')
       except Exception as e:
          log.exception("Could not automatically set alarm",e)
-         self.media.playEffect('critical_error.wav')
+         self.media.playVoice('Error setting alarm')
          self.nextAlarm = None
 
    # Find out where our next event is, and then calculate travel time to there
@@ -175,7 +174,7 @@ class AlarmThread(threading.Thread):
       self.fromEvent = False
       self.settings.set('manual_alarm',calendar.timegm(alarmTime.utctimetuple()))
       self.setAlarmTime(alarmTime)
-      self.media.playEffect('naptime.wav')
+      self.media.playVoice('Manual alarm has been set')
 
    def setAlarmTime(self,alarmTime):
       self.nextAlarm = alarmTime

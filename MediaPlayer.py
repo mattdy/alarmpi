@@ -57,16 +57,12 @@ class MediaPlayer:
       self.player.loadfile(file)
       self.player.loop = loop
 
-   def playEffect(self,file): 
+   # Play some speech. None-blocking equivalent of playSpeech, which also pays attention to sfx_enabled setting
+   def playVoice(self,text): 
       if self.settings.get('sfx_enabled')==0:
          # We've got sound effects disabled, so skip
          return
-
-      path = FX_DIRECTORY + file
-      log.info("Playing effect %s", path)
-      self.effect = Player()
-      self.effect.loadfile(path)
-      self.effect.loop=-1
+      play = subprocess.Popen('/usr/bin/googletts "%s"' % (text), shell=True)
 
    # Play some speech. Warning: Blocks until we're done speaking
    def playSpeech(self,text):
