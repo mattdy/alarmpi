@@ -99,3 +99,9 @@ class Settings:
 
    def __del__(self):
       self.conn.close()
+
+if __name__ == '__main__':
+   print "Showing all current settings"
+   settings = Settings()
+   for s in settings.DEFAULTS:
+      print "%s = %s" % (s[0], settings.get(s[0]))
