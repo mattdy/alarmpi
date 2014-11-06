@@ -23,6 +23,7 @@ import LcdThread
 import BrightnessThread
 import Settings
 import MediaPlayer
+from Web import WebApplication
 	
 class AlarmPi:
    def __init__(self):
@@ -77,6 +78,11 @@ class AlarmPi:
       log.debug("Starting alarm control")
       alarm.start()
 
+      log.debug("Starting web application")
+      web = WebApplication(alarm)
+      web.setDaemon(True)
+      web.start()
+
       # Main loop where we just spin until we receive a shutdown request
       try:
          while(self.stopping is False):
@@ -89,6 +95,7 @@ class AlarmPi:
       time.sleep(2)
 
       log.info("Stopping all services")
+      web.stop()
       alarm.stop()
       clock.stop()
       lcd.stop()
