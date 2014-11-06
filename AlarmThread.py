@@ -143,7 +143,12 @@ class AlarmThread(threading.Thread):
 
          self.setAlarmTime(event)
          self.settings.set('manual_alarm','') # We've just auto-set an alarm, so clear any manual ones
-         self.media.playVoice('Automatic alarm has been set')
+
+         # Read out the time we've just set
+         hour = event.strftime("%I").lstrip("0")
+         readTime = "%s %s %s" % (hour, event.strftime("%M"), event.strftime("%p"))
+         self.media.playVoice('Automatic alarm has been set for %s' % (readTime))
+
       except Exception as e:
          log.exception("Could not automatically set alarm",e)
          self.media.playVoice('Error setting alarm')
