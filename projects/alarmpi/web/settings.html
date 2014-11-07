@@ -1,0 +1,8 @@
+$def with (form)
+
+<h2>Settings</h2>
+<form name="main" method="post"> 
+$if not form.valid: <p class="error">Form wasn't valid</p>
+$:form.render()
+<input type="submit" />
+</form>
