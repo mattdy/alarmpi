@@ -94,8 +94,10 @@ class AlarmThread(threading.Thread):
 
          hour = now.strftime("%I").lstrip("0")
 
+         salutation = "morning" if now.strftime("%p")=="AM" else "afternoon" if int(hour) < 18 else "evening"
+
          # Today is Monday 31st of October, the time is 9 56 AM
-         speech = "Good morning Matt. Today is %s %s %s, the time is %s %s %s. " % (now.strftime("%A"), day, now.strftime("%B"), hour, now.strftime("%M"), now.strftime("%p"))
+         speech = "Good %s Matt. Today is %s %s %s, the time is %s %s %s. " % (salutation, now.strftime("%A"), day, now.strftime("%B"), hour, now.strftime("%M"), now.strftime("%p"))
          speech += weather
 
          self.media.playSpeech(speech)
