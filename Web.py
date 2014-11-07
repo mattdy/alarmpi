@@ -1,16 +1,20 @@
 import web
 from web import form
 import time
+import datetime
+import pytz
 import threading
 import logging
 from Settings import Settings
 
 urls = (
     '/', 'index',
+    '/settings', 'set',
+    '/reset', 'reset',
     '/api', 'api',
 )
 
-render = web.template.render('web/', cache=False)
+render = web.template.render('web/', cache=False, base='layout')
 
 settings = Settings()
 alarm = None
@@ -18,6 +22,63 @@ alarm = None
 log = logging.getLogger('root')
 
 class index:
+   def getAlarmForm(self):
+      global alarm
+
+      nextAlarm = alarm.getNextAlarm()
+      alarmTime = ""
+
+      if nextAlarm is not None:
+         alarmTime = nextAlarm.strftime("%I%M")
+
+      return form.Form(
+         form.Textbox("time",
+            form.notnull,
+            form.regexp('[0-2][0-9][0-5][0-9]', 'Must be a 24hr time'),
+            description="Set alarm time",
+            value = alarmTime,
+         ),
+      )
+
+   def GET(self):
+      global alarm
+      form = self.getAlarmForm()()
+      return render.index(form,alarm)
+
+   def POST(self):
+      global alarm
+      form = self.getAlarmForm()()
+      if not form.validates():
+         return render.index(form,alarm)
+
+      alarmHour = int(form['time'].value[:2])
+      alarmMin = int(form['time'].value[2:])
+      time = datetime.datetime.now(pytz.timezone('Europe/London'))
+
+      # So we don't set an alarm in the past
+      if alarmHour < time.hour:
+         time = time + datetime.timedelta(days=1)
+
+      time = time.replace(hour=alarmHour, minute=alarmMin, microsecond=0, second=0)
+
+      alarm.manualSetAlarm(time)
+
+      return render.confirmation("Setting alarm to %s" % (time))
+
+class reset:
+   def GET(self):
+      global alarm
+      log.debug("Web request to reset alarm")
+      alarm.autoSetAlarm()
+ 
+      nextAlarm = alarm.getNextAlarm()
+      alarmTime = "none"
+      if nextAlarm is not None:
+         alarmTime = nextAlarm.strftime("%c")
+
+      return render.confirmation("Alarm has been auto-set to %s" % (alarmTime))
+
+class set:
    def getForm(self):
       return form.Form(
          form.Textbox("home",
@@ -71,15 +132,13 @@ class index:
       )
 
    def GET(self):
-      global alarm
       form = self.getForm()()
-      return render.index(form,alarm)
+      return render.settings(form)
 
    def POST(self):
-      global alarm
       form = self.getForm()()
       if not form.validates():
-         return render.index(form,alarm)
+         return render.settings(form)
 
       changes = []
       log.debug("Processing web request for settings changes")
@@ -128,12 +187,12 @@ class index:
          changes.append("Setting SFX to %s" % (form['sfx'].checked))
          settings.set('sfx_enabled', 1 if form['sfx'].checked else 0)
 
-      text = "<html>Configuring settings:<p><ul><li>%s</li></ul><hr>[<a href='/'>Back</a>]</html>" % ("</li><li>".join(changes))
+      text = "Configuring settings:<p><ul><li>%s</li></ul>" % ("</li><li>".join(changes))
       # For debugging purposes
       for c in changes:
          log.debug(c)
       
-      return text
+      return render.confirmation(text)
 
 
 class api:
