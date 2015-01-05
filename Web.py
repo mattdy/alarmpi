@@ -108,6 +108,12 @@ class set:
             description="Time (mins) before event for alarm",
             value=settings.getInt('wakeup_time'),
          ),
+         form.Textbox("precancel",
+            form.notnull,
+            form.regexp('\d+', 'Must be a digit'),
+            description="Pre-empt cancel alarm allowed (secs)",
+            value=settings.get('preempt_cancel'),
+         ),
          form.Textbox("waketime",
             form.notnull,
             form.regexp('[0-2][0-9][0-5][0-9]', 'Must be a 24hr time'),
@@ -162,6 +168,10 @@ class set:
       if int(form['wakeup'].value) != settings.getInt('wakeup_time'):
          changes.append("Set wakeup time to %s" % (form['wakeup'].value))
          settings.set('wakup_time', form['wakeup'].value)
+
+      if int(form['precancel'].value) != settings.getInt('preempt_cancel'):
+         changes.append("Set pre-emptive cancel time to %s seconds" % (form['precancel'].value))
+         settings.set('preempt_cancel', form['precancel'].value)
 
       if form['waketime'].value != settings.get('default_wake'):
          changes.append("Set default wake time to %s" % (form['waketime'].value))
