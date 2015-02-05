@@ -7,15 +7,14 @@ log = logging.getLogger('root')
 
 # Radio stations we can play through mplayer
 STATIONS = [
-   {'name':'BBC Radio 1', 'url':'http://bbc.co.uk/radio/listen/live/r1.asx'},
-   {'name':'BBC Radio 2', 'url':'http://bbc.co.uk/radio/listen/live/r2.asx'},
+   {'name':'BBC Radio 1', 'url':'http://www.radiofeeds.co.uk/bbcradio1.pls'},
+   {'name':'BBC Radio 2', 'url':'http://www.radiofeeds.co.uk/bbcradio2.pls'},
    {'name':'Capital FM', 'url':'http://ms1.capitalinteractive.co.uk/fm_high'},
    {'name':'Kerrang Radio', 'url':'http://tx.whatson.com/icecast.php?i=kerrang.aac.m3u'},
    {'name':'Magic 105.4', 'url':'http://tx.whatson.com/icecast.php?i=magic1054.aac.m3u'},
    {'name':'Smooth Radio', 'url':'http://media-ice.musicradio.com/SmoothUK.m3u'},
    {'name':'XFM', 'url':'http://media-ice.musicradio.com/XFM.m3u'},
-   {'name':'BBC Radio London', 'url':'http://bbc.co.uk/radio/listen/live/bbclondon.asx'},
-   {'name':'BBC Radio Surrey', 'url':'http://bbc.co.uk/radio/listen/live/bbcsurrey.asx'},
+   {'name':'BBC Radio London', 'url':'http://www.radiofeeds.co.uk/bbclondon.pls'},
 ]
 
 class Settings:
