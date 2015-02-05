@@ -157,8 +157,8 @@ class AlarmThread(threading.Thread):
          self.nextAlarm = None
 
    # Find out where our next event is, and then calculate travel time to there
-   def fetchTravelTime(self):
-      destination = self.alarmGatherer.getNextEventLocation()
+   def fetchTravelTime(self, update=False):
+      destination = self.alarmGatherer.getNextEventLocation(today=update)
       if(destination is None):
          destination = self.settings.get('location_work')
       travelTime = self.travel.getTravelTime(destination)
@@ -167,7 +167,7 @@ class AlarmThread(threading.Thread):
 
    def travelAdjustAlarm(self):
       log.info("Adjusting alarm for current travel time")
-      newTravelTime = self.fetchTravelTime()
+      newTravelTime = self.fetchTravelTime(update=True)
       travelDiff = newTravelTime - self.travelTime
       log.debug("Old travel time: %s, new travel time: %s, diff: %s" % (self.travelTime, newTravelTime, travelDiff))
       

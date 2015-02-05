@@ -54,7 +54,7 @@ class AlarmGatherer:
       self.credentials = run(self.FLOW, self.storage)
 
    # Get the first event that isn't today
-   def getNextEvent(self):
+   def getNextEvent(self, today=False):
       if not self.checkCredentials():
          log.error("GCal credentials have expired")
          log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
@@ -62,10 +62,11 @@ class AlarmGatherer:
 
       # We want to find events tomorrow, rather than another one today
       time = datetime.datetime.now()
-      time += datetime.timedelta(days=1) # Move to tomorrow
-      time = time.replace(hour=10,minute=0,second=0,microsecond=0) # Reset to 10am the next day
-      # 10am is late enough that a night shift from today won't be caught, but a morning shift
-      #  from tomorrow will be caught
+      if not today:
+         time += datetime.timedelta(days=1) # Move to tomorrow
+         time = time.replace(hour=10,minute=0,second=0,microsecond=0) # Reset to 10am the next day
+         # 10am is late enough that a night shift from today won't be caught, but a morning shift
+         #  from tomorrow will be caught
 
       result = self.service.events().list(
          calendarId=self.settings.get('calendar'),
@@ -78,16 +79,16 @@ class AlarmGatherer:
       events = result.get('items', [])
       return events[0]
 
-   def getNextEventTime(self):
-      nextEvent = self.getNextEvent()
+   def getNextEventTime(self, includeToday=False):
+      nextEvent = self.getNextEvent(today=includeToday)
       start = dateutil.parser.parse(nextEvent['start']['dateTime'])
       #start = dateutil.parser.parse(nextEvent['start']['dateTime'],ignoretz=True)
       #start = start.replace(tzinfo=pytz.timezone('Europe/London'))
 
       return start
 
-   def getNextEventLocation(self):
-      nextEvent = self.getNextEvent()
+   def getNextEventLocation(self, includeToday=False):
+      nextEvent = self.getNextEvent(today=includeToday)
       if(nextEvent['location']):
          return nextEvent['location']
       
@@ -117,3 +118,4 @@ if __name__ == '__main__':
       a = AlarmGatherer()
 
    print a.getNextEventTime()
+   print a.getNextEventLocation()
