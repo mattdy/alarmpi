@@ -152,13 +152,13 @@ class AlarmThread(threading.Thread):
          self.media.playVoice('Automatic alarm has been set for %s' % (readTime))
 
       except Exception as e:
-         log.exception("Could not automatically set alarm",e)
+         log.exception("Could not automatically set alarm")
          self.media.playVoice('Error setting alarm')
          self.nextAlarm = None
 
    # Find out where our next event is, and then calculate travel time to there
    def fetchTravelTime(self, update=False):
-      destination = self.alarmGatherer.getNextEventLocation(today=update)
+      destination = self.alarmGatherer.getNextEventLocation(includeToday=update)
       if(destination is None):
          destination = self.settings.get('location_work')
       travelTime = self.travel.getTravelTime(destination)

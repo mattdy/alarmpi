@@ -55,14 +55,16 @@ class AlarmGatherer:
 
    # Get the first event that isn't today
    def getNextEvent(self, today=False):
+      log.debug("Fetching details of next event")
       if not self.checkCredentials():
          log.error("GCal credentials have expired")
          log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
          raise Exception("GCal credentials not authorized")
 
-      # We want to find events tomorrow, rather than another one today
       time = datetime.datetime.now()
       if not today:
+         # We want to find events tomorrow, rather than another one today
+         log.debug("Skipping events from today")
          time += datetime.timedelta(days=1) # Move to tomorrow
          time = time.replace(hour=10,minute=0,second=0,microsecond=0) # Reset to 10am the next day
          # 10am is late enough that a night shift from today won't be caught, but a morning shift
@@ -80,6 +82,7 @@ class AlarmGatherer:
       return events[0]
 
    def getNextEventTime(self, includeToday=False):
+      log.debug("Fetching next event time (including today=%s)" % (includeToday))
       nextEvent = self.getNextEvent(today=includeToday)
       start = dateutil.parser.parse(nextEvent['start']['dateTime'])
       #start = dateutil.parser.parse(nextEvent['start']['dateTime'],ignoretz=True)
@@ -88,6 +91,7 @@ class AlarmGatherer:
       return start
 
    def getNextEventLocation(self, includeToday=False):
+      log.debug("Fetching next event location (including today=%s)" % (includeToday))
       nextEvent = self.getNextEvent(today=includeToday)
       if(nextEvent['location']):
          return nextEvent['location']
