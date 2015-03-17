@@ -24,7 +24,7 @@ class WeatherFetcher:
             place = "Gatwick" # Default to Gatwick
 
          try:
-            response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place))
+            response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place), timeout=5)
             response = json.loads(response.read())
          except:
             log.exception("Error fetching weather")
