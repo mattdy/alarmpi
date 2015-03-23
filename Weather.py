@@ -1,9 +1,9 @@
-import json
 import datetime
 import pytz
 import urllib2
 import Settings
 import logging
+import requests
 
 log = logging.getLogger('root')
 
@@ -24,8 +24,11 @@ class WeatherFetcher:
             place = "Gatwick" # Default to Gatwick
 
          try:
-            response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place), timeout=5)
-            response = json.loads(response.read())
+            log.debug("Making request to OpenWeatherMap")
+            response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place), timeout=3)
+            log.debug("Completed request to OpenWeatherMap")
+            response = response.json()
+            log.debug("Parsed response")
          except:
             log.exception("Error fetching weather")
             if(self.cache is not None):
