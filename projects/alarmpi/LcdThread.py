@@ -103,25 +103,28 @@ class LcdThread(threading.Thread):
       while(not self.stopping):
          time.sleep(0.1)
 
-         if self.alarmThread.isAlarmSounding():
-            self.setMessage("Wakey wakey!",True)
-            continue         
+         try:
+            if self.alarmThread.isAlarmSounding():
+               self.setMessage("Wakey wakey!",True)
+               continue         
 
-         if self.menu.isActive():
-            message = self.menu.getMessage()
-         elif self.menu.backgroundRadioActive():
-            message = "Radio player on"
-         else:
-            now = datetime.datetime.now(pytz.timezone('Europe/London'))
-            message = formatDate(now)
-            message+="\n"
+            if self.menu.isActive():
+               message = self.menu.getMessage()
+            elif self.menu.backgroundRadioActive():
+               message = "Radio player on"
+            else:
+               now = datetime.datetime.now(pytz.timezone('Europe/London'))
+               message = formatDate(now)
+               message+="\n"
             
-            message+=self.weather.getWeather().display()
-            message+="\n"
+               message+=self.weather.getWeather().display()
+               message+="\n"
 
-            message+=self.alarmThread.getMenuLine()
+               message+=self.alarmThread.getMenuLine()
 
-         self.setMessage(message,True)
+            self.setMessage(message,True)
+         except:
+            log.exception("Error in LcdThread loop")
 
       # end while not stopping
       self.setMessage("Shutting down")
