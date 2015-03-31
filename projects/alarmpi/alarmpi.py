@@ -24,6 +24,7 @@ import BrightnessThread
 import Settings
 import MediaPlayer
 from Web import WebApplication
+from Weather import WeatherFetcher
 	
 class AlarmPi:
    def __init__(self):
@@ -39,6 +40,9 @@ class AlarmPi:
       settings = Settings.Settings()
       settings.setup()
 
+      log.debug("Loading weather")
+      weather = WeatherFetcher()
+
       log.debug("Loading media")
       media = MediaPlayer.MediaPlayer()
       media.playVoice('Starting up')
@@ -48,11 +52,11 @@ class AlarmPi:
       clock.setDaemon(True)
 
       log.debug("Loading alarm control")
-      alarm = AlarmThread.AlarmThread()
+      alarm = AlarmThread.AlarmThread(weather)
       alarm.setDaemon(True)
 
       log.debug("Loading LCD")
-      lcd = LcdThread.LcdThread(alarm,self.stop)
+      lcd = LcdThread.LcdThread(alarm, self.stop, weather)
       lcd.setDaemon(True)
       lcd.start()
 

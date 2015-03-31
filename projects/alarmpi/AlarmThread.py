@@ -10,7 +10,6 @@ import AlarmGatherer
 import MediaPlayer
 import logging
 import urllib2
-from Weather import WeatherFetcher
 from TravelCalculator import TravelCalculator
 
 log = logging.getLogger('root')
@@ -20,7 +19,7 @@ def suffix(d):
 
 class AlarmThread(threading.Thread):
 
-   def __init__(self):
+   def __init__(self, weatherFetcher):
       threading.Thread.__init__(self)
       self.stopping=False
       self.nextAlarm=None
@@ -30,7 +29,7 @@ class AlarmThread(threading.Thread):
       self.settings = Settings.Settings()
       self.media = MediaPlayer.MediaPlayer()
       self.alarmGatherer = AlarmGatherer.AlarmGatherer()
-      self.weather = WeatherFetcher()
+      self.weather = weatherFetcher
 
       self.fromEvent = False # False if auto or manual, True if from an event
 

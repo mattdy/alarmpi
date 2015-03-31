@@ -6,7 +6,6 @@ import pytz
 import threading
 import MenuControl
 import Settings
-from Weather import WeatherFetcher
 from InputWorker import InputWorker
 import logging
 
@@ -33,7 +32,7 @@ def formatDate(dateObj):
 
 class LcdThread(threading.Thread):
 
-   def __init__(self,alarmThread,shutdownCallback):
+   def __init__(self,alarmThread,shutdownCallback,weatherFetcher):
       threading.Thread.__init__(self)
       self.alarmThread = alarmThread
       self.stopping=False
@@ -42,8 +41,7 @@ class LcdThread(threading.Thread):
 
       self.settings = Settings.Settings()
 
-      self.weather = WeatherFetcher()
-      self.weather.getWeather() # So we populate the cache straight away
+      self.weather = weatherFetcher
 
       self.menu = MenuControl.MenuControl(alarmThread,shutdownCallback)
       self.menu.setDaemon(True)
