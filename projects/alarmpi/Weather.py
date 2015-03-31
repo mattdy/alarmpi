@@ -29,6 +29,8 @@ class WeatherFetcher:
             log.debug("Completed request to OpenWeatherMap")
             response = response.json()
             log.debug("Parsed response")
+
+            attempt = response['main'] # So we get a KeyError thrown if the response isn't correct
          except:
             log.exception("Error fetching weather")
             if(self.cache is not None):
@@ -42,6 +44,8 @@ class WeatherFetcher:
          weather.setWindDirection(response['wind']['deg'])
          weather.setPressure(response['main']['pressure'])
 
+         log.debug("Generated weather: %s" % (weather))
+   
          timeout = datetime.datetime.now(pytz.timezone('Europe/London'))
          timeout += datetime.timedelta(minutes=30) # Cache for 30 minutes
          self.cacheTimeout = timeout
@@ -85,7 +89,7 @@ class Weather:
    def setWindDirection(self,wdir):
       if wdir==0:
          wdir = 360
-      self.wdir = wdir
+      self.wdir = int(wdir)
 
    def setPressure(self,pressure):
       self.pressure = int(pressure)
@@ -101,3 +105,6 @@ class Weather:
       speech += "Q N H %s hectopascals" % (splitNumber(self.pressure))
 
       return speech
+
+   def __str__(self):
+      return "Weather[temp=%s,wdir=%s,wspeed=%s,press=%s,cond='%s']" % (self.temp, self.wdir, self.wspeed, self.pressure, self.condition)
