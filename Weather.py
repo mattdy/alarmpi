@@ -38,15 +38,12 @@ class WeatherFetcher:
             else:
                return weather # return empty Weather object as we have nothing else
     
-         weather.setTempK(response['main']['temp'])
-         weather.setCondition(response['weather'][0]['description'])
-         weather.setWindSpeedMps(response['wind']['speed'])
-         weather.setWindDirection(response['wind']['deg'])
-         weather.setPressure(response['main']['pressure'])
+         weather.setTempK(response['main'].get("temp", 0))
+         weather.setCondition(response['weather'][0].get("description")) log.debug("Generated weather: %s" % (weather))
+         weather.setWindSpeedMps(response['wind'].get("speed", 0))
+         weather.setWindDirection(response['wind'].get("deg", 0)) timeout = datetime.datetime.now(pytz.timezone('Europe/London'))
+         weather.setPressure(response['main'].get("pressure", 0))
 
-         log.debug("Generated weather: %s" % (weather))
-   
-         timeout = datetime.datetime.now(pytz.timezone('Europe/London'))
          timeout += datetime.timedelta(minutes=30) # Cache for 30 minutes
          self.cacheTimeout = timeout
 
