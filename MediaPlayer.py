@@ -27,7 +27,7 @@ class MediaPlayer:
       # Wait a few seconds and see if the mplayer instance is still running
       time.sleep(self.settings.getInt('radio_delay'))
 
-      if alarmThread.isSnoozing() or alarmThread.getNextAlarm() is None
+      if alarmThread.isSnoozing() or alarmThread.getNextAlarm() is None:
          # We've snoozed or cancelled the alarm, so no need to check for player
          log.debug("Media player senses alarm already cancelled/snoozed, so not checking for mplayer instance")
          return
