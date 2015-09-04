@@ -65,7 +65,7 @@ class AlarmThread(threading.Thread):
 
    def soundAlarm(self):
       log.info("Alarm triggered")
-      self.media.soundAlarm()
+      self.media.soundAlarm(self)
       timeout = datetime.datetime.now(pytz.timezone('Europe/London'))
       timeout += datetime.timedelta(minutes=self.settings.getInt('alarm_timeout'))
       self.alarmTimeout = timeout

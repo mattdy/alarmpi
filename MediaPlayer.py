@@ -19,13 +19,18 @@ class MediaPlayer:
    def playerActive(self):
       return self.player!=False
 
-   def soundAlarm(self):
+   def soundAlarm(self, alarmThread):
       log.info("Playing alarm")
       self.playStation()
       log.debug("Alarm process opened")
 
       # Wait a few seconds and see if the mplayer instance is still running
       time.sleep(self.settings.getInt('radio_delay'))
+
+      if alarmThread.isSnoozing() or alarmThread.getNextAlarm() is None
+         # We've snoozed or cancelled the alarm, so no need to check for player
+         log.debug("Media player senses alarm already cancelled/snoozed, so not checking for mplayer instance")
+         return
 
       # Fetch the number of mplayer processes running
       processes = subprocess.Popen('ps aux | grep mplayer | egrep -v "grep" | wc -l',
