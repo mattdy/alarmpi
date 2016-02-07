@@ -16,6 +16,7 @@ log.addHandler(stream)
 
 import time
 import datetime
+import pytz
 import threading
 import ClockThread
 import AlarmThread
@@ -72,7 +73,7 @@ class AlarmPi:
       if manual==0 or manual is None:
          alarm.autoSetAlarm()
       else:
-         alarmTime = datetime.datetime.utcfromtimestamp(manual)
+         alarmTime = datetime.datetime.fromtimestamp(manual, pytz.timezone('Europe/London'))
          log.info("Loaded previously set manual alarm time of %s",alarmTime)
          alarm.manualSetAlarm(alarmTime)
 
