@@ -34,6 +34,12 @@ class WeatherFetcher:
             attempt = response['main'] # So we get a KeyError thrown if the response isn't correct
          except:
             log.exception("Error fetching weather")
+            
+            # Update cache timeout to avoid repeatedly spamming requests (see https://github.com/mattdy/alarmpi/issues/2)
+            timeout = datetime.datetime.now(pytz.timezone('Europe/London'))
+            timeout += datetime.timedelta(minutes=1) # Don't keep the cache for too long, just long enough to avoid request spam
+            self.cacheTimeout = timeout
+
             if(self.cache is not None):
                return self.cache # we have a cache, so return that rather than an empty object
             else:
