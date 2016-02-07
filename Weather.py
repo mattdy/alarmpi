@@ -4,6 +4,7 @@ import urllib2
 import Settings
 import logging
 import requests
+import CalendarCredentials
 
 log = logging.getLogger('root')
 
@@ -25,7 +26,7 @@ class WeatherFetcher:
 
          try:
             log.debug("Making request to OpenWeatherMap")
-            response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=%s' % (place), timeout=3)
+            response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=%s&APPID=%s' % (place, CalendarCredentials.OWM_APPID), timeout=3)
             log.debug("Completed request to OpenWeatherMap")
             response = response.json()
             log.debug("Parsed response")
