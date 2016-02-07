@@ -74,8 +74,9 @@ class MediaPlayer:
 
    # Play some speech. Warning: Blocks until we're done speaking
    def playSpeech(self,text):
-      log.info("Playing speech: '%s'" % (text))
-      play = subprocess.Popen('/usr/bin/googletts "%s"' % (text), shell=True)
+      path = self.settings.get("tts_path");
+      log.info("Playing speech: '%s' through `%s`" % (text,path))
+      play = subprocess.Popen('echo "%s" | %s' % (text,path), shell=True)
       play.wait()
 
    def stopPlayer(self):
