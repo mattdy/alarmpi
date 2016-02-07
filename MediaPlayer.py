@@ -68,8 +68,9 @@ class MediaPlayer:
          # We've got sound effects disabled, so skip
          log.info("Sound effects disabled, not playing voice")
          return
-      log.info("Playing voice: '%s'" % (text))
-      play = subprocess.Popen('/usr/bin/googletts "%s"' % (text), shell=True)
+      path = self.settings.get("tts_path");
+      log.info("Playing voice: '%s' through `%s`" % (text,path))
+      play = subprocess.Popen('echo "%s" | %s' % (text,path), shell=True)
 
    # Play some speech. Warning: Blocks until we're done speaking
    def playSpeech(self,text):

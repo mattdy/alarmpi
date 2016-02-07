@@ -47,6 +47,7 @@ class Settings:
       ('preempt_cancel','600'), # Number of seconds before an alarm that we're allowed to cancel it
       ('location_home','Lyndale Road, Redhill, Surrey, UK'), # Location for home
       ('location_work','Gatwick Airport'), # Default location for work (if lookup from event fails)
+      ('tts_path','/usr/bin/festival --tts'), # The command we pipe our TTS output into
    ]
 
    def __init__(self):
