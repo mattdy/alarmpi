@@ -54,7 +54,6 @@ class AlarmThread(threading.Thread):
 
    def snooze(self):
       log.info("Snoozing alarm for %s minutes", self.settings.getInt('snooze_length'))
-      self.silenceAlarm()
 
       alarmTime = datetime.datetime.now(pytz.timezone('Europe/London'))
       alarmTime += datetime.timedelta(minutes=self.settings.getInt('snooze_length'))
@@ -62,6 +61,8 @@ class AlarmThread(threading.Thread):
       self.snoozing = True
       self.alarmTimeout = None
       self.fromEvent = False
+
+      self.silenceAlarm() # Only silence after we've re-set the alarm to avoid a race condition
 
    def soundAlarm(self):
       log.info("Alarm triggered")
