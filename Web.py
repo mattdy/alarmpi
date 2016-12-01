@@ -171,7 +171,7 @@ class set:
 
       if int(form['wakeup'].value) != settings.getInt('wakeup_time'):
          changes.append("Set wakeup time to %s" % (form['wakeup'].value))
-         settings.set('wakup_time', form['wakeup'].value)
+         settings.set('wakeup_time', form['wakeup'].value)
 
       if int(form['precancel'].value) != settings.getInt('preempt_cancel'):
          changes.append("Set pre-emptive cancel time to %s seconds" % (form['precancel'].value))
