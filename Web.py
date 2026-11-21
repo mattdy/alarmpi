@@ -134,10 +134,6 @@ class set:
             checked=(settings.getInt('sfx_enabled')==1),
              value="sfx",
          ),
-         form.Textbox("ttspath",
-            description="TTS path",
-            value=settings.get('tts_path'),
-         ),
       )
 
    def GET(self):
@@ -200,11 +196,7 @@ class set:
          changes.append("Setting SFX to %s" % (form['sfx'].checked))
          settings.set('sfx_enabled', 1 if form['sfx'].checked else 0)
 
-      if form['ttspath'].value != settings.get('tts_path'):
-         changes.append("Setting TTS path to %s" % (form['ttspath'].value))
-         settings.set('tts_path', form['ttspath'].value)
-
-      text = "Configuring settings:<p><ul><li>%s</li></ul>" % ("</li><li>".join(changes))
+      text = "Configuring settings:<p><ul><li>%s</li></ul>" % ("</li><li>".join([web.websafe(c) for c in changes]))
       # For debugging purposes
       for c in changes:
          log.debug(c)
@@ -225,7 +217,6 @@ class WebApplication(threading.Thread):
    def run(self):
       log.debug("Starting up web server")
       self.app = web.application(urls, globals())
-      self.app.internalerror = web.debugerror
       web.httpserver.runsimple(self.app.wsgifunc(), ("0.0.0.0", 80))
       log.debug("Web server has stopped")
 

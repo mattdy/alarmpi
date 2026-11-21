@@ -25,7 +25,7 @@ class WeatherFetcher:
 
          try:
             log.debug("Making request to OpenWeatherMap")
-            response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=%s&APPID=%s' % (place, CalendarCredentials.OWM_APPID), timeout=3)
+            response = requests.get('https://api.openweathermap.org/data/2.5/weather', params={'q': place, 'APPID': CalendarCredentials.OWM_APPID}, timeout=3)
             log.debug("Completed request to OpenWeatherMap")
             response = response.json()
             log.debug("Parsed response")

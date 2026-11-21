@@ -94,8 +94,11 @@ class Settings:
       self.conn.commit()
 
    def setVolume(self,val):
-      subprocess.Popen("%s %s" % (self.VOL_CMD,val), stdout=subprocess.PIPE, shell=True)
-      log.info("Volume adjusted to %s", val)
+      try:
+         subprocess.Popen([self.VOL_CMD, str(int(val))], stdout=subprocess.DEVNULL)
+         log.info("Volume adjusted to %s", val)
+      except OSError:
+         log.exception("Could not run volume command %s", self.VOL_CMD)
 
    def __del__(self):
       self.conn.close()

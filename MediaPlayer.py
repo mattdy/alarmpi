@@ -70,14 +70,19 @@ class MediaPlayer:
          return
       path = self.settings.get("tts_path");
       log.info("Playing voice: '%s' through `%s`" % (text,path))
-      play = subprocess.Popen('echo "%s" | %s' % (text,path), shell=True)
+      play = subprocess.Popen(path, shell=True, stdin=subprocess.PIPE)
+      try:
+         play.stdin.write(("%s\n" % (text)).encode('utf-8'))
+         play.stdin.close()
+      except OSError:
+         log.exception("Could not send text to TTS command")
 
    # Play some speech. Warning: Blocks until we're done speaking
    def playSpeech(self,text):
       path = self.settings.get("tts_path");
       log.info("Playing speech: '%s' through `%s`" % (text,path))
-      play = subprocess.Popen('echo "%s" | %s' % (text,path), shell=True)
-      play.wait()
+      play = subprocess.Popen(path, shell=True, stdin=subprocess.PIPE)
+      play.communicate(("%s\n" % (text)).encode('utf-8'))
 
    def stopPlayer(self):
       if self.player:
