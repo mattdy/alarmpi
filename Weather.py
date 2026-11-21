@@ -39,10 +39,12 @@ class WeatherFetcher:
             timeout += datetime.timedelta(minutes=1) # Don't keep the cache for too long, just long enough to avoid request spam
             self.cacheTimeout = timeout
 
-            if(self.cache is not None):
-               return self.cache # we have a cache, so return that rather than an empty object
-            else:
-               return weather # return empty Weather object as we have nothing else
+            if(self.cache is None):
+               # We have nothing else, so cache an empty Weather object. Without this we'd skip
+               #  the timeout above and make a new request on every call until one succeeds
+               self.cache = weather
+
+            return self.cache
     
          weather.setTempK(response['main'].get("temp", 0))
          weather.setCondition(response['weather'][0].get("description").replace("intensity ",""))
