@@ -64,7 +64,7 @@ class MediaPlayer:
 
    # Play some speech. None-blocking equivalent of playSpeech, which also pays attention to sfx_enabled setting
    def playVoice(self,text): 
-      if self.settings.get('sfx_enabled')==0:
+      if self.settings.getInt('sfx_enabled')==0:
          # We've got sound effects disabled, so skip
          log.info("Sound effects disabled, not playing voice")
          return

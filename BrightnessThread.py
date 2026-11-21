@@ -49,7 +49,7 @@ class BrightnessThread(threading.Thread):
 
          # We set the brightness manually, so just count down until we can resume auto-brightness
          if(self.manualTimeout>0):
-            self.manualTimeout=-1
+            self.manualTimeout-=1
             continue
 
          reading = float(self.sensor.readIR())

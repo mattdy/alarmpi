@@ -29,7 +29,7 @@ class index:
       alarmTime = ""
 
       if nextAlarm is not None:
-         alarmTime = nextAlarm.strftime("%I%M")
+         alarmTime = nextAlarm.strftime("%H%M")
 
       return form.Form(
          form.Textbox("time",
@@ -53,13 +53,12 @@ class index:
 
       alarmHour = int(form['time'].value[:2])
       alarmMin = int(form['time'].value[2:])
-      time = datetime.datetime.now(pytz.timezone('Europe/London'))
+      now = datetime.datetime.now(pytz.timezone('Europe/London'))
+      time = now.replace(hour=alarmHour, minute=alarmMin, microsecond=0, second=0)
 
       # So we don't set an alarm in the past
-      if alarmHour < time.hour:
+      if time <= now:
          time = time + datetime.timedelta(days=1)
-
-      time = time.replace(hour=alarmHour, minute=alarmMin, microsecond=0, second=0)
 
       alarm.manualSetAlarm(time)
 

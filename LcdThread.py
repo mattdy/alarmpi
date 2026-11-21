@@ -82,7 +82,7 @@ class LcdThread(threading.Thread):
          self.alarmThread.stopAlarm()
          return
 
-      if self.alarmThread.alarmInSeconds() < self.settings.getInt('preempt_cancel') and not self.menu.isActive():
+      if self.alarmThread.getNextAlarm() is not None and self.alarmThread.alarmInSeconds() < self.settings.getInt('preempt_cancel') and not self.menu.isActive():
          # We're in the allowable window for pre-empting a cancel alarm, and we're not in the menu
          log.info("Pre-empt cancel triggered")
          self.alarmThread.stopAlarm()

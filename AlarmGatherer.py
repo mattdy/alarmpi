@@ -61,7 +61,7 @@ class AlarmGatherer:
          log.warning("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
          raise Exception("GCal credentials not authorized")
 
-      time = datetime.datetime.now()
+      time = datetime.datetime.now(pytz.timezone('Europe/London'))
       if not today:
          # We want to find events tomorrow, rather than another one today
          log.debug("Skipping events from today")
@@ -75,7 +75,7 @@ class AlarmGatherer:
          maxResults='1',
          orderBy='startTime',
          singleEvents='true',
-         timeMin="%sZ" % (time.isoformat())
+         timeMin=time.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
       ).execute()
 
       events = result.get('items', [])
@@ -93,10 +93,7 @@ class AlarmGatherer:
    def getNextEventLocation(self, includeToday=False):
       log.debug("Fetching next event location (including today=%s)" % (includeToday))
       nextEvent = self.getNextEvent(today=includeToday)
-      if(nextEvent['location']):
-         return nextEvent['location']
-      
-      return None
+      return nextEvent.get('location') or None # Not all events have a location
 
    def getDefaultAlarmTime(self):
       defaultTime = self.settings.get('default_wake')

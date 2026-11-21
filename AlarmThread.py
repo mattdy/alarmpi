@@ -206,7 +206,7 @@ class AlarmThread(threading.Thread):
          return 0
 
       diff = self.nextAlarm - now
-      return diff.seconds
+      return int(diff.total_seconds()) # Not diff.seconds, which ignores whole days
 
    # Return a line of text describing the alarm state
    def getMenuLine(self):
