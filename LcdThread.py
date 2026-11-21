@@ -44,7 +44,7 @@ class LcdThread(threading.Thread):
       self.weather = weatherFetcher
 
       self.menu = MenuControl.MenuControl(alarmThread,shutdownCallback)
-      self.menu.setDaemon(True)
+      self.menu.daemon = True
 
       self.lcd = LCDControl()
       self.lcd.white()

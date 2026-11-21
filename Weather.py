@@ -1,6 +1,5 @@
 import datetime
 import pytz
-import urllib2
 import Settings
 import logging
 import requests
@@ -21,7 +20,7 @@ class WeatherFetcher:
          weather = Weather()
 
          place = self.settings.get('weather_location')
-         if(place is None or place is ""):
+         if(place is None or place == ""):
             place = "Gatwick" # Default to Gatwick
 
          try:

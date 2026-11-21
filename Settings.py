@@ -65,7 +65,7 @@ class Settings:
       self.setVolume(self.getInt('volume'))
 
    def firstRun(self):
-      log.warn("Running first-time SQLite set-up")
+      log.warning("Running first-time SQLite set-up")
       self.c.execute('CREATE TABLE '+self.TABLE_NAME+' (name text, value text)')
       self.c.executemany('INSERT INTO '+self.TABLE_NAME+' VALUES (?,?)',self.DEFAULTS)
       self.conn.commit()
@@ -81,7 +81,7 @@ class Settings:
       try:
          return int(self.get(key))
       except ValueError:
-         log.warn("Could not fetch %s as integer, value was [%s], returning 0",key,self.get(key))
+         log.warning("Could not fetch %s as integer, value was [%s], returning 0",key,self.get(key))
          return 0
 
    def set(self,key,val):
@@ -101,7 +101,7 @@ class Settings:
       self.conn.close()
 
 if __name__ == '__main__':
-   print "Showing all current settings"
+   print("Showing all current settings")
    settings = Settings()
    for s in settings.DEFAULTS:
-      print "%s = %s" % (s[0], settings.get(s[0]))
+      print("%s = %s" % (s[0], settings.get(s[0])))

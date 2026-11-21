@@ -34,7 +34,7 @@ class AlarmGatherer:
       self.credentials = self.storage.get()
       if not self.checkCredentials():
          log.error("GCal credentials have expired")
-         log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
+         log.warning("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
          return
 
       http = httplib2.Http()
@@ -58,7 +58,7 @@ class AlarmGatherer:
       log.debug("Fetching details of next event")
       if not self.checkCredentials():
          log.error("GCal credentials have expired")
-         log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
+         log.warning("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
          raise Exception("GCal credentials not authorized")
 
       time = datetime.datetime.now()
@@ -111,15 +111,15 @@ class AlarmGatherer:
 
 
 if __name__ == '__main__':
-   print "Running credential check"
+   print("Running credential check")
    a = AlarmGatherer()
    try:
       if not a.checkCredentials():
          raise Exception("Credential check failed")
    except:
-      print "Credentials not correct, please generate new code"
+      print("Credentials not correct, please generate new code")
       a.generateAuth()
       a = AlarmGatherer()
 
-   print a.getNextEventTime()
-   print a.getNextEventLocation()
+   print(a.getNextEventTime())
+   print(a.getNextEventLocation())

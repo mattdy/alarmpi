@@ -72,10 +72,10 @@ class BrightnessThread(threading.Thread):
 
          levelDiff = abs(self.currentLevel - avgLevel)
 
-#         print "Reading: %s, Percentage: %s, NewLevel: %s, AvgLevel: %s, Diff: %s" % (reading,percentage,newLevel,avgLevel,levelDiff)
+#         print("Reading: %s, Percentage: %s, NewLevel: %s, AvgLevel: %s, Diff: %s" % (reading,percentage,newLevel,avgLevel,levelDiff))
 
          if(levelDiff>=2):
-#            print "Updating brightness to %s" % (avgLevel)
+#            print("Updating brightness to %s" % (avgLevel))
             self.currentLevel=avgLevel
             self.updateBrightness()
 
