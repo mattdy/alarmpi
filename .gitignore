@@ -1,0 +1,11 @@
+# Local configuration and credentials
+CalendarCredentials.py
+service_account.json
+calendar_token.json
+calendar.dat
+settings.db
+
+# Python
+__pycache__/
+*.pyc
+venv/
