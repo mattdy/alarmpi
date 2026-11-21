@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import logging
 import sys
@@ -50,20 +50,20 @@ class AlarmPi:
 
       log.debug("Loading clock")
       clock = ClockThread.ClockThread()
-      clock.setDaemon(True)
+      clock.daemon = True
 
       log.debug("Loading alarm control")
       alarm = AlarmThread.AlarmThread(weather)
-      alarm.setDaemon(True)
+      alarm.daemon = True
 
       log.debug("Loading LCD")
       lcd = LcdThread.LcdThread(alarm, self.stop, weather)
-      lcd.setDaemon(True)
+      lcd.daemon = True
       lcd.start()
 
       log.debug("Loading brightness control")
       bright = BrightnessThread.BrightnessThread()
-      bright.setDaemon(True)
+      bright.daemon = True
       bright.registerControlObject(clock.segment.disp)
       bright.registerControlObject(lcd)
       bright.start()
@@ -85,7 +85,7 @@ class AlarmPi:
 
       log.debug("Starting web application")
       web = WebApplication(alarm)
-      web.setDaemon(True)
+      web.daemon = True
       web.start()
 
       # Main loop where we just spin until we receive a shutdown request
@@ -93,9 +93,9 @@ class AlarmPi:
          while(self.stopping is False):
             time.sleep(1)
       except (KeyboardInterrupt, SystemExit):
-         log.warn("Interrupted, shutting down")
+         log.warning("Interrupted, shutting down")
 
-      log.warn("Shutting down")
+      log.warning("Shutting down")
       media.playVoice('Shutting down. Goodbye')
       time.sleep(2)
 

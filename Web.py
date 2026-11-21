@@ -29,7 +29,7 @@ class index:
       alarmTime = ""
 
       if nextAlarm is not None:
-         alarmTime = nextAlarm.strftime("%I%M")
+         alarmTime = nextAlarm.strftime("%H%M")
 
       return form.Form(
          form.Textbox("time",
@@ -53,13 +53,12 @@ class index:
 
       alarmHour = int(form['time'].value[:2])
       alarmMin = int(form['time'].value[2:])
-      time = datetime.datetime.now(pytz.timezone('Europe/London'))
+      now = datetime.datetime.now(pytz.timezone('Europe/London'))
+      time = now.replace(hour=alarmHour, minute=alarmMin, microsecond=0, second=0)
 
       # So we don't set an alarm in the past
-      if alarmHour < time.hour:
+      if time <= now:
          time = time + datetime.timedelta(days=1)
-
-      time = time.replace(hour=alarmHour, minute=alarmMin, microsecond=0, second=0)
 
       alarm.manualSetAlarm(time)
 
@@ -98,19 +97,19 @@ class set:
          ),         
          form.Textbox("snooze",
             form.notnull,
-            form.regexp('\d+', 'Must be a digit'),
+            form.regexp(r'\d+', 'Must be a digit'),
             description="Snooze Length (minutes)",
             value=settings.getInt('snooze_length'),
          ),
          form.Textbox("wakeup",
             form.notnull,
-            form.regexp('\d+', 'Must be a digit'),
+            form.regexp(r'\d+', 'Must be a digit'),
             description="Time (mins) before event for alarm",
             value=settings.getInt('wakeup_time'),
          ),
          form.Textbox("precancel",
             form.notnull,
-            form.regexp('\d+', 'Must be a digit'),
+            form.regexp(r'\d+', 'Must be a digit'),
             description="Pre-empt cancel alarm allowed (secs)",
             value=settings.get('preempt_cancel'),
          ),
@@ -134,10 +133,6 @@ class set:
             description="SFX enabled",
             checked=(settings.getInt('sfx_enabled')==1),
              value="sfx",
-         ),
-         form.Textbox("ttspath",
-            description="TTS path",
-            value=settings.get('tts_path'),
          ),
       )
 
@@ -201,11 +196,7 @@ class set:
          changes.append("Setting SFX to %s" % (form['sfx'].checked))
          settings.set('sfx_enabled', 1 if form['sfx'].checked else 0)
 
-      if form['ttspath'].value != settings.get('tts_path'):
-         changes.append("Setting TTS path to %s" % (form['ttspath'].value))
-         settings.set('tts_path', form['ttspath'].value)
-
-      text = "Configuring settings:<p><ul><li>%s</li></ul>" % ("</li><li>".join(changes))
+      text = "Configuring settings:<p><ul><li>%s</li></ul>" % ("</li><li>".join([web.websafe(c) for c in changes]))
       # For debugging purposes
       for c in changes:
          log.debug(c)
@@ -226,7 +217,6 @@ class WebApplication(threading.Thread):
    def run(self):
       log.debug("Starting up web server")
       self.app = web.application(urls, globals())
-      self.app.internalerror = web.debugerror
       web.httpserver.runsimple(self.app.wsgifunc(), ("0.0.0.0", 80))
       log.debug("Web server has stopped")
 

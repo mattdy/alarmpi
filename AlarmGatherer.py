@@ -1,67 +1,94 @@
-import gflags
-import httplib2
+import os
 import datetime
 import pytz
 import dateutil.parser
 import logging
 
-from apiclient.discovery import build
-from oauth2client.file import Storage
-from oauth2client.client import OAuth2WebServerFlow
-from oauth2client.tools import run
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 import Settings
 import CalendarCredentials # File with variables CLIENT_ID, CLIENT_SECRET, DEVELOPER_KEY and CALENDAR
 
 log = logging.getLogger('root')
 
-FLAGS = gflags.FLAGS
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+
+# If this key file exists we authenticate as a service account (the calendar must be shared with
+#  the service account's email address). Otherwise we use the token saved by generateAuth()
+SERVICE_ACCOUNT_FILE = 'service_account.json'
+TOKEN_FILE = 'calendar_token.json'
+
+# Port used for the one-off browser sign-in. If the Pi is headless, forward it over SSH first:
+#  ssh -L 8080:localhost:8080 <pi>
+AUTH_PORT = 8080
 
 class AlarmGatherer:
    def __init__(self):
-      self.FLOW = OAuth2WebServerFlow(
-         client_id=CalendarCredentials.CLIENT_ID,
-         client_secret=CalendarCredentials.CLIENT_SECRET,
-         scope='https://www.googleapis.com/auth/calendar',
-         user_agent='AlarmPi/1.0'
-      )
-
       self.settings = Settings.Settings()
 
-      FLAGS.auth_local_webserver = False
-
-      self.storage = Storage('calendar.dat')
-      self.credentials = self.storage.get()
+      self.service = None
+      self.credentials = self.loadCredentials()
       if not self.checkCredentials():
-         log.error("GCal credentials have expired")
-         log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
+         log.error("GCal credentials missing or expired")
+         log.warning("Run 'python3 AlarmGatherer.py' to fix")
          return
-
-      http = httplib2.Http()
-      http = self.credentials.authorize(http)
 
       self.service = build(
          serviceName='calendar',
          version='v3',
-         http=http,
-         developerKey=CalendarCredentials.DEVELOPER_KEY
+         credentials=self.credentials,
+         cache_discovery=False
       )
 
-   def checkCredentials(self):
-      return not (self.credentials is None or self.credentials.invalid == True)
+   def loadCredentials(self):
+      if os.path.exists(SERVICE_ACCOUNT_FILE):
+         log.debug("Using service account credentials from %s", SERVICE_ACCOUNT_FILE)
+         return service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
+      if os.path.exists(TOKEN_FILE):
+         log.debug("Using saved user credentials from %s", TOKEN_FILE)
+         return Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+
+      return None
+
+   def checkCredentials(self):
+      if self.credentials is None:
+         return False
+
+      if isinstance(self.credentials, service_account.Credentials):
+         return True # Service account tokens are fetched on demand
+
+      # An expired access token is fine as long as we can refresh it
+      return self.credentials.valid or bool(self.credentials.refresh_token)
+
+   # One-off interactive sign-in, saves a token that we can keep refreshing
    def generateAuth(self):
-      self.credentials = run(self.FLOW, self.storage)
+      flow = InstalledAppFlow.from_client_config({
+         'installed': {
+            'client_id': CalendarCredentials.CLIENT_ID,
+            'client_secret': CalendarCredentials.CLIENT_SECRET,
+            'auth_uri': 'https://accounts.google.com/o/oauth2/auth',
+            'token_uri': 'https://oauth2.googleapis.com/token',
+            'redirect_uris': ['http://localhost'],
+         }
+      }, SCOPES)
+
+      self.credentials = flow.run_local_server(port=AUTH_PORT, open_browser=False)
+      with open(TOKEN_FILE, 'w') as token:
+         token.write(self.credentials.to_json())
 
    # Get the first event that isn't today
    def getNextEvent(self, today=False):
       log.debug("Fetching details of next event")
-      if not self.checkCredentials():
-         log.error("GCal credentials have expired")
-         log.warn("Remove calendar.dat and run 'python AlarmGatherer.py' to fix")
+      if self.service is None or not self.checkCredentials():
+         log.error("GCal credentials missing or expired")
+         log.warning("Run 'python3 AlarmGatherer.py' to fix")
          raise Exception("GCal credentials not authorized")
 
-      time = datetime.datetime.now()
+      time = datetime.datetime.now(pytz.timezone('Europe/London'))
       if not today:
          # We want to find events tomorrow, rather than another one today
          log.debug("Skipping events from today")
@@ -75,7 +102,7 @@ class AlarmGatherer:
          maxResults='1',
          orderBy='startTime',
          singleEvents='true',
-         timeMin="%sZ" % (time.isoformat())
+         timeMin=time.astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
       ).execute()
 
       events = result.get('items', [])
@@ -93,10 +120,7 @@ class AlarmGatherer:
    def getNextEventLocation(self, includeToday=False):
       log.debug("Fetching next event location (including today=%s)" % (includeToday))
       nextEvent = self.getNextEvent(today=includeToday)
-      if(nextEvent['location']):
-         return nextEvent['location']
-      
-      return None
+      return nextEvent.get('location') or None # Not all events have a location
 
    def getDefaultAlarmTime(self):
       defaultTime = self.settings.get('default_wake')
@@ -111,15 +135,15 @@ class AlarmGatherer:
 
 
 if __name__ == '__main__':
-   print "Running credential check"
+   print("Running credential check")
    a = AlarmGatherer()
    try:
       if not a.checkCredentials():
          raise Exception("Credential check failed")
    except:
-      print "Credentials not correct, please generate new code"
+      print("Credentials not correct, please generate new code")
       a.generateAuth()
       a = AlarmGatherer()
 
-   print a.getNextEventTime()
-   print a.getNextEventLocation()
+   print(a.getNextEventTime())
+   print(a.getNextEventLocation())

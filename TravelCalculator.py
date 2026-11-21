@@ -1,4 +1,5 @@
-import urllib
+import urllib.parse
+import urllib.request
 import json
 import logging
 import CalendarCredentials
@@ -21,9 +22,9 @@ class TravelCalculator:
       }
 
       try:
-         url = "https://maps.googleapis.com/maps/api/distancematrix/json?%s" % (urllib.urlencode(params))
+         url = "https://maps.googleapis.com/maps/api/distancematrix/json?%s" % (urllib.parse.urlencode(params))
          log.debug("Requesting travel time info from %s" % (url))
-         response = json.loads(urllib.urlopen(url).read())
+         response = json.loads(urllib.request.urlopen(url).read())
 
          if(response['status']!="OK"):
             if(response['error_message']):
@@ -31,7 +32,7 @@ class TravelCalculator:
             raise Exception("Travel time request failed, status returned was %s" % (response['status']))
 
          seconds = response['rows'][0]['elements'][0]['duration']['value']
-         minutes = int(seconds)/60 # Rough division to get number of minutes rather than seconds
+         minutes = int(seconds)//60 # Rough division to get number of minutes rather than seconds
 
          log.debug("Got travel time of %s seconds, converted to %s minutes" % (seconds,minutes))
 

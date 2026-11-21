@@ -6,4 +6,4 @@ encoder = gaugette.rotary_encoder.RotaryEncoder(A_PIN, B_PIN)
 while True:
    delta = encoder.get_cycles()
    if delta!=0:
-     print "rotate %d" % delta
+     print("rotate %d" % delta)

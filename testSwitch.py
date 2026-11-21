@@ -6,12 +6,12 @@ state = False
 
 while True:
    if switch.get_state():
-#      print "State on"
+#      print("State on")
       if not state:
-         print "Press"
+         print("Press")
          state = True
    else:
-#      print "State off"
+#      print("State off")
       state = False
 
    time.sleep(0.001)

@@ -1,6 +1,5 @@
 import datetime
 import pytz
-import urllib2
 import Settings
 import logging
 import requests
@@ -21,12 +20,12 @@ class WeatherFetcher:
          weather = Weather()
 
          place = self.settings.get('weather_location')
-         if(place is None or place is ""):
+         if(place is None or place == ""):
             place = "Gatwick" # Default to Gatwick
 
          try:
             log.debug("Making request to OpenWeatherMap")
-            response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=%s&APPID=%s' % (place, CalendarCredentials.OWM_APPID), timeout=3)
+            response = requests.get('https://api.openweathermap.org/data/2.5/weather', params={'q': place, 'APPID': CalendarCredentials.OWM_APPID}, timeout=3)
             log.debug("Completed request to OpenWeatherMap")
             response = response.json()
             log.debug("Parsed response")
@@ -40,10 +39,12 @@ class WeatherFetcher:
             timeout += datetime.timedelta(minutes=1) # Don't keep the cache for too long, just long enough to avoid request spam
             self.cacheTimeout = timeout
 
-            if(self.cache is not None):
-               return self.cache # we have a cache, so return that rather than an empty object
-            else:
-               return weather # return empty Weather object as we have nothing else
+            if(self.cache is None):
+               # We have nothing else, so cache an empty Weather object. Without this we'd skip
+               #  the timeout above and make a new request on every call until one succeeds
+               self.cache = weather
+
+            return self.cache
     
          weather.setTempK(response['main'].get("temp", 0))
          weather.setCondition(response['weather'][0].get("description").replace("intensity ",""))

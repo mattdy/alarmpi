@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import time
 import datetime
@@ -9,7 +9,7 @@ import Settings
 import AlarmGatherer
 import MediaPlayer
 import logging
-import urllib2
+import urllib.request
 from TravelCalculator import TravelCalculator
 
 log = logging.getLogger('root')
@@ -105,7 +105,7 @@ class AlarmThread(threading.Thread):
       # Send a notification to HomeControl (OpenHAB) that we're now awake
       try:
          log.debug("Sending wake notification to HomeControl")
-         urllib2.urlopen("http://homecontrol:9090/CMD?isSleeping=OFF").read()
+         urllib.request.urlopen("http://homecontrol:9090/CMD?isSleeping=OFF").read()
       except Exception:
          log.exception("Failed to send wake state to HomeControl")
       
@@ -206,7 +206,7 @@ class AlarmThread(threading.Thread):
          return 0
 
       diff = self.nextAlarm - now
-      return diff.seconds
+      return int(diff.total_seconds()) # Not diff.seconds, which ignores whole days
 
    # Return a line of text describing the alarm state
    def getMenuLine(self):

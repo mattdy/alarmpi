@@ -65,7 +65,7 @@ class Settings:
       self.setVolume(self.getInt('volume'))
 
    def firstRun(self):
-      log.warn("Running first-time SQLite set-up")
+      log.warning("Running first-time SQLite set-up")
       self.c.execute('CREATE TABLE '+self.TABLE_NAME+' (name text, value text)')
       self.c.executemany('INSERT INTO '+self.TABLE_NAME+' VALUES (?,?)',self.DEFAULTS)
       self.conn.commit()
@@ -81,7 +81,7 @@ class Settings:
       try:
          return int(self.get(key))
       except ValueError:
-         log.warn("Could not fetch %s as integer, value was [%s], returning 0",key,self.get(key))
+         log.warning("Could not fetch %s as integer, value was [%s], returning 0",key,self.get(key))
          return 0
 
    def set(self,key,val):
@@ -94,14 +94,17 @@ class Settings:
       self.conn.commit()
 
    def setVolume(self,val):
-      subprocess.Popen("%s %s" % (self.VOL_CMD,val), stdout=subprocess.PIPE, shell=True)
-      log.info("Volume adjusted to %s", val)
+      try:
+         subprocess.Popen([self.VOL_CMD, str(int(val))], stdout=subprocess.DEVNULL)
+         log.info("Volume adjusted to %s", val)
+      except OSError:
+         log.exception("Could not run volume command %s", self.VOL_CMD)
 
    def __del__(self):
       self.conn.close()
 
 if __name__ == '__main__':
-   print "Showing all current settings"
+   print("Showing all current settings")
    settings = Settings()
    for s in settings.DEFAULTS:
-      print "%s = %s" % (s[0], settings.get(s[0]))
+      print("%s = %s" % (s[0], settings.get(s[0])))
